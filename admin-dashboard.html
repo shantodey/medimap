@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediMap - ফার্মাসি অ্যাডমিন প্যানেল</title>
+    <link rel="icon" type="image/x-icon" href="assets/logo.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kalpurush&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/admin.css" rel="stylesheet">
+    <link href="css/responsive.css" rel="stylesheet">
+</head>
+<body class="admin-body">
+    <!-- Top Header -->
+    <header class="admin-header">
+        <div class="admin-header-content">
+            <div class="admin-logo">
+                <div class="logo-placeholder">LOGO</div>
+                <h1>MediMap</h1>
+                <span class="admin-badge">অ্যাডমিন</span>
+            </div>
+            <div class="admin-user-info">
+                <div class="user-details">
+                    <span class="pharmacy-name" id="pharmacyName">লোড হচ্ছে...</span>
+                    <span class="user-role">ফার্মাসি মালিক</span>
+                </div>
+                <div class="user-avatar">
+                    <img id="userAvatar" src="" alt="User" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="avatar-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+                    <button class="btn-icon" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <nav class="sidebar-nav">
+                <ul class="nav-menu">
+                    <li class="nav-item active">
+                        <a href="#dashboard" class="nav-link" data-section="dashboard">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>ড্যাশবোর্ড</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#inventory" class="nav-link" data-section="inventory">
+                            <i class="fas fa-pills"></i>
+                            <span>ওষুধের তালিকা</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#add-medicine" class="nav-link" data-section="add-medicine">
+                            <i class="fas fa-plus"></i>
+                            <span>নতুন ওষুধ</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#orders" class="nav-link" data-section="orders">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>অর্ডার</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#profile" class="nav-link" data-section="profile">
+                            <i class="fas fa-store"></i>
+                            <span>ফার্মাসি তথ্য</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#settings" class="nav-link" data-section="settings">
+                            <i class="fas fa-cog"></i>
+                            <span>সেটিংস</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="admin-section active">
+                <div class="section-header">
+                    <h2>ড্যাশবোর্ড</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="refreshData()">
+                            <i class="fas fa-sync-alt"></i>
+                            রিফ্রেশ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalMedicines">0</h3>
+                            <p>মোট ওষুধ</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="lowStockItems">0</h3>
+                            <p>কম স্টক</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="todayOrders">0</h3>
+                            <p>আজকের অর্ডার</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="todayRevenue">০</h3>
+                            <p>আজকের বিক্রয়</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h3>দ্রুত কাজ</h3>
+                    <div class="action-cards">
+                        <div class="action-card" onclick="showSection('add-medicine')">
+                            <i class="fas fa-plus"></i>
+                            <span>নতুন ওষুধ যোগ</span>
+                        </div>
+                        <div class="action-card" onclick="showSection('inventory')">
+                            <i class="fas fa-edit"></i>
+                            <span>স্টক আপডেট</span>
+                        </div>
+                        <div class="action-card" onclick="showSection('profile')">
+                            <i class="fas fa-clock"></i>
+                            <span>সময় পরিবর্তন</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="recent-activity">
+                    <h3>সাম্প্রতিক কার্যকলাপ</h3>
+                    <div class="activity-list" id="activityList">
+                        <!-- Activities will be loaded here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Inventory Section -->
+            <section id="inventory" class="admin-section">
+                <div class="section-header">
+                    <h2>ওষুধের তালিকা</h2>
+                    <div class="section-actions">
+                        <input type="text" id="medicineSearch" placeholder="ওষুধ খুঁজুন..." class="search-input">
+                        <button class="btn btn-success" onclick="showSection('add-medicine')">
+                            <i class="fas fa-plus"></i>
+                            নতুন যোগ করুন
+                        </button>
+                    </div>
+                </div>
+
+                <div class="inventory-table-container">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>ওষুধের নাম</th>
+                                <th>দাম (৳)</th>
+                                <th>স্টক</th>
+                                <th>অবস্থা</th>
+                                <th>শেষ আপডেট</th>
+                                <th>কাজ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <!-- Inventory items will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Add Medicine Section -->
+            <section id="add-medicine" class="admin-section">
+                <div class="section-header">
+                    <h2>নতুন ওষুধ যোগ করুন</h2>
+                </div>
+
+                <div class="form-container">
+                    <form id="addMedicineForm" class="admin-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">ওষুধের নাম *</label>
+                                <input type="text" id="medicineName" class="form-input" placeholder="যেমন: নাপা, হিস্টাসিন" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">দাম (৳) *</label>
+                                <input type="number" id="medicinePrice" class="form-input" placeholder="0.00" step="0.5" min="0" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">স্টক পরিমাণ *</label>
+                                <input type="number" id="medicineStock" class="form-input" placeholder="0" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ক্যাটেগরি</label>
+                                <select id="medicineCategory" class="form-select">
+                                    <option value="">ক্যাটেগরি নির্বাচন করুন</option>
+                                    <option value="fever">জ্বরের ওষুধ</option>
+                                    <option value="pain">ব্যথার ওষুধ</option>
+                                    <option value="cold">সর্দি-কাশির ওষুধ</option>
+                                    <option value="allergy">এলার্জির ওষুধ</option>
+                                    <option value="gastric">গ্যাস্ট্রিকের ওষুধ</option>
+                                    <option value="antibiotic">অ্যান্টিবায়োটিক</option>
+                                    <option value="vitamin">ভিটামিন</option>
+                                    <option value="other">অন্যান্য</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">ব্যবহার/উপকারিতা</label>
+                            <div class="checkbox-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="fever" name="uses">
+                                    জ্বর
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="headache" name="uses">
+                                    মাথা ব্যথা
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="cold" name="uses">
+                                    সর্দি
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="body-pain" name="uses">
+                                    শরীর ব্যথা
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="allergy" name="uses">
+                                    এলার্জি
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="gastric" name="uses">
+                                    গ্যাস্ট্রিক
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" onclick="resetForm()">
+                                <i class="fas fa-times"></i>
+                                বাতিল
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                সেভ করুন
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Orders Section -->
+            <section id="orders" class="admin-section">
+                <div class="section-header">
+                    <h2>অর্ডার তালিকা</h2>
+                    <div class="section-actions">
+                        <select id="orderFilter" class="form-select">
+                            <option value="all">সব অর্ডার</option>
+                            <option value="pending">অপেক্ষমাণ</option>
+                            <option value="completed">সম্পন্ন</option>
+                            <option value="cancelled">বাতিল</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="orders-container">
+                    <div id="ordersList">
+                        <!-- Orders will be loaded here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Section -->
+            <section id="profile" class="admin-section">
+                <div class="section-header">
+                    <h2>ফার্মাসি তথ্য</h2>
+                </div>
+
+                <div class="profile-container">
+                    <form id="profileForm" class="admin-form">
+                        <div class="profile-header">
+                            <div class="pharmacy-image">
+                                <img id="pharmacyImage" src="" alt="Pharmacy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="image-placeholder">
+                                    <i class="fas fa-store"></i>
+                                </div>
+                                <button type="button" class="btn-upload" onclick="uploadImage()">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">ফার্মাসির নাম</label>
+                                <input type="text" id="profilePharmacyName" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">মালিকের নাম</label>
+                                <input type="text" id="ownerName" class="form-input">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">ঠিকানা</label>
+                            <textarea id="pharmacyAddress" class="form-textarea"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">ফোন নম্বর</label>
+                                <input type="tel" id="pharmacyPhone" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ইমেইল</label>
+                                <input type="email" id="pharmacyEmail" class="form-input">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">খোলার সময়</label>
+                                <input type="time" id="openTime" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">বন্ধের সময়</label>
+                                <input type="time" id="closeTime" class="form-input">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">বিশেষ সেবা</label>
+                            <div class="checkbox-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="service24h">
+                                    ২৪ ঘন্টা খোলা
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="serviceDelivery">
+                                    হোম ডেলিভারি
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="serviceOxygen">
+                                    অক্সিজেন সিলিন্ডার
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="serviceEmergency">
+                                    জরুরি সেবা
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                তথ্য আপডেট করুন
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="admin-section">
+                <div class="section-header">
+                    <h2>সেটিংস</h2>
+                </div>
+
+                <div class="settings-container">
+                    <div class="settings-section">
+                        <h3>পাসওয়ার্ড পরিবর্তন</h3>
+                        <form id="passwordForm" class="admin-form">
+                            <div class="form-group">
+                                <label class="form-label">বর্তমান পাসওয়ার্ড</label>
+                                <input type="password" id="currentPassword" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">নতুন পাসওয়ার্ড</label>
+                                <input type="password" id="newPassword" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">নতুন পাসওয়ার্ড নিশ্চিত করুন</label>
+                                <input type="password" id="confirmPassword" class="form-input">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-key"></i>
+                                পাসওয়ার্ড আপডেট
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>নোটিফিকেশন সেটিংস</h3>
+                        <div class="settings-options">
+                            <label class="setting-option">
+                                <input type="checkbox" id="notifLowStock" checked>
+                                <span>কম স্টকের জন্য নোটিফিকেশন</span>
+                            </label>
+                            <label class="setting-option">
+                                <input type="checkbox" id="notifNewOrders" checked>
+                                <span>নতুন অর্ডারের জন্য নোটিফিকেশন</span>
+                            </label>
+                            <label class="setting-option">
+                                <input type="checkbox" id="notifUpdates" checked>
+                                <span>সিস্টেম আপডেটের জন্য নোটিফিকেশন</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="editMedicineModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>ওষুধ সম্পাদনা</h3>
+                <button class="modal-close" onclick="closeModal('editMedicineModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editMedicineForm" class="admin-form">
+                    <input type="hidden" id="editMedicineId">
+                    <div class="form-group">
+                        <label class="form-label">ওষুধের নাম</label>
+                        <input type="text" id="editMedicineName" class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">দাম (৳)</label>
+                            <input type="number" id="editMedicinePrice" class="form-input" step="0.5" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">স্টক</label>
+                            <input type="number" id="editMedicineStock" class="form-input" min="0">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('editMedicineModal')">বাতিল</button>
+                        <button type="submit" class="btn btn-primary">আপডেট</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/maps.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediMap - ফার্মাসি লগইন</title>
+    <link rel="icon" type="image/x-icon" href="assets/logo.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kalpurush&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/pharmacy_login.css" rel="stylesheet">
+    <link href="css/responsive.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="index.html" class="logo">
+                    <div class="logo-placeholder">LOGO</div>
+                    <h1>MediMap</h1>
+                </a>
+                <div class="nav-buttons">
+                    <a href="index.html" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        হোমে ফিরুন
+                    </a>
+                    <a href="pharmacy-registration.html" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        নিবন্ধন করুন
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="login-main">
+        <div class="container">
+            <div class="login-container">
+                <!-- Login Form -->
+                <div class="login-card">
+                    <div class="login-header">
+                        <div class="login-icon">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <h2>ফার্মাসি লগইন</h2>
+                        <p>আপনার ফার্মাসি অ্যাকাউন্টে প্রবেশ করুন</p>
+                    </div>
+
+                    <form id="loginForm" class="login-form">
+                        <!-- Alert Box -->
+                        <div id="alertBox" class="alert alert-error hidden">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span id="alertMessage"></span>
+                        </div>
+
+                        <!-- Username Field -->
+                        <div class="form-group">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user"></i>
+                                ইউজারনেম
+                            </label>
+                            <input 
+                                type="text" 
+                                id="username" 
+                                name="username" 
+                                class="form-input" 
+                                placeholder="আপনার ইউজারনেম লিখুন"
+                                required
+                                autocomplete="username"
+                            >
+                            <div class="form-error" id="usernameError"></div>
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="form-group">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock"></i>
+                                পাসওয়ার্ড
+                            </label>
+                            <div class="password-input-container">
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    name="password" 
+                                    class="form-input" 
+                                    placeholder="আপনার পাসওয়ার্ড লিখুন"
+                                    required
+                                    autocomplete="current-password"
+                                >
+                                <button type="button" class="password-toggle" onclick="togglePassword()">
+                                    <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                                </button>
+                            </div>
+                            <div class="form-error" id="passwordError"></div>
+                        </div>
+
+                        <!-- Remember Me -->
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="rememberMe" name="rememberMe">
+                                <span class="checkmark"></span>
+                                আমাকে মনে রাখুন
+                            </label>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary btn-login">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span id="loginButtonText">লগইন করুন</span>
+                        </button>
+                    </form>
+
+                    <!-- Login Footer -->
+                    <div class="login-footer">
+                        <div class="forgot-password">
+                            <a href="#" onclick="showForgotPassword()">
+                                <i class="fas fa-key"></i>
+                                পাসওয়ার্ড ভুলে গেছেন?
+                            </a>
+                        </div>
+                        <div class="register-link">
+                            নতুন ফার্মাসি? 
+                            <a href="pharmacy-registration.html">
+                                এখানে নিবন্ধন করুন
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Login Info -->
+                <div class="login-info">
+                    <h3>কেন MediMap?</h3>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="info-content">
+                                <h4>বেশি কাস্টমার</h4>
+                                <p>আপনার ফার্মাসিতে আরও বেশি রোগী পাবেন</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="info-content">
+                                <h4>বিক্রয় বৃদ্ধি</h4>
+                                <p>অনলাইন উপস্থিতির মাধ্যমে বিক্রয় বাড়ান</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="info-content">
+                                <h4>সহজ ব্যবস্থাপনা</h4>
+                                <p>যেকোনো সময় স্টক আপডেট করুন</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="info-content">
+                                <h4>নিরাপদ ও বিশ্বস্ত</h4>
+                                <p>সম্পূর্ণ নিরাপদ এবং গোপনীয়তা রক্ষা</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Support -->
+                    <div class="support-section">
+                        <h4>সাহায্য প্রয়োজন?</h4>
+                        <div class="support-options">
+                            <a href="tel:+88016XXXXXXXX" class="support-btn">
+                                <i class="fas fa-phone"></i>
+                                ফোন করুন
+                            </a>
+                            <a href="#" onclick="openWhatsApp()" class="support-btn">
+                                <i class="fab fa-whatsapp"></i>
+                                WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>পাসওয়ার্ড রিসেট</h3>
+                <button class="modal-close" onclick="closeForgotPassword()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>আপনার নিবন্ধিত ফোন নম্বর বা ইমেইল দিন। আমরা আপনাকে পাসওয়ার্ড রিসেট করার লিংক পাঠিয়ে দেব।</p>
+                <form id="forgotPasswordForm">
+                    <div class="form-group">
+                        <label class="form-label">ফোন নম্বর বা ইমেইল</label>
+                        <input type="text" id="resetContact" class="form-input" placeholder="01XXXXXXXXX অথবা email@example.com" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeForgotPassword()">বাতিল</button>
+                        <button type="submit" class="btn btn-primary">রিসেট লিংক পাঠান</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>লগইন করা হচ্ছে...</p>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/pharmacy_login.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+</html>

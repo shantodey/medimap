@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediMap - ফার্মাসি নিবন্ধন</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kalpurush&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="assets/logo.png">
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js"></script>
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/registration.css" rel="stylesheet">
+    <link href="css/responsive.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="index.html" class="logo">
+                    <div class="logo-placeholder">LOGO</div>
+                    <h1>MediMap</h1>
+                </a>
+                <div class="nav-buttons">
+                    <a href="index.html" class="btn btn-secondary">
+                        <i class="fas fa-home"></i>
+                        হোমে ফিরুন
+                    </a>
+                    <a href="pharmacy-login.html" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i>
+                        লগইন করুন
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="registration-main">
+        <div class="container">
+            <!-- Registration Header -->
+            <div class="registration-header">
+                <h2>ফার্মাসি নিবন্ধন</h2>
+                <p>MediMap এ আপনার ফার্মাসি যোগ করুন এবং বেশি কাস্টমার পান</p>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="step-indicators">
+                    <div class="step-indicator active" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-label">ফার্মাসি তথ্য</div>
+                    </div>
+                    <div class="step-indicator" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-label">মালিকের তথ্য</div>
+                    </div>
+                    <div class="step-indicator" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-label">ওষুধ নির্বাচন</div>
+                    </div>
+                    <div class="step-indicator" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-label">নিশ্চিতকরণ</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registration Form -->
+            <div class="registration-form-container">
+                <form id="registrationForm" class="registration-form">
+                    <!-- Alert Box -->
+                    <div id="alertBox" class="alert alert-error hidden">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span id="alertMessage"></span>
+                    </div>
+
+                    <!-- Step Title -->
+                    <div class="step-title-container">
+                        <h3 class="step-title">ধাপ ১: ফার্মাসি তথ্য</h3>
+                    </div>
+
+                    <!-- Step 1: Pharmacy Information -->
+                    <div class="form-step active" data-step="1">
+                        <div class="step-content">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="pharmacyName" class="form-label">
+                                        <i class="fas fa-store"></i>
+                                        ফার্মাসির নাম *
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="pharmacyName" 
+                                        class="form-input" 
+                                        placeholder="যেমন: Popular Pharmacy"
+                                        required
+                                        maxlength="100"
+                                    >
+                                    <div id="pharmacyNameError" class="form-error"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="pharmacyAddress" class="form-label">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    সম্পূর্ণ ঠিকানা *
+                                </label>
+                                <textarea 
+                                    id="pharmacyAddress" 
+                                    class="form-textarea" 
+                                    placeholder="দোকানের নাম, রোড নাম, এলাকা, থানা, জেলা"
+                                    required
+                                    rows="3"
+                                    maxlength="500"
+                                ></textarea>
+                                <div id="pharmacyAddressError" class="form-error"></div>
+                                
+                                <!-- Location Helper -->
+                                <div class="location-helper">
+                                    <button type="button" id="getLocationBtn" class="btn btn-outline btn-sm">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        বর্তমান অবস্থান ব্যবহার করুন
+                                    </button>
+                                    <div id="locationStatus" class="location-status"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="pharmacyPhone" class="form-label">
+                                        <i class="fas fa-phone"></i>
+                                        ফোন নম্বর *
+                                    </label>
+                                    <input 
+                                        type="tel" 
+                                        id="pharmacyPhone" 
+                                        class="form-input" 
+                                        placeholder="01XXXXXXXXX"
+                                        required
+                                        pattern="01[3-9][0-9]{8}"
+                                    >
+                                    <div id="pharmacyPhoneError" class="form-error"></div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="pharmacyEmail" class="form-label">
+                                        <i class="fas fa-envelope"></i>
+                                        ইমেইল (ঐচ্ছিক)
+                                    </label>
+                                    <input 
+                                        type="email" 
+                                        id="pharmacyEmail" 
+                                        class="form-input" 
+                                        placeholder="pharmacy@example.com"
+                                    >
+                                    <div id="pharmacyEmailError" class="form-error"></div>
+                                </div>
+                            </div>
+
+                            <!-- Opening Hours -->
+                            <div class="opening-hours-section">
+                                <h4><i class="fas fa-clock"></i> খোলা-বন্ধের সময়</h4>
+                                
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="is24Hours">
+                                        <span class="checkmark"></span>
+                                        ২৪ ঘন্টা খোলা
+                                    </label>
+                                </div>
+
+                                <div class="form-row" id="timeInputs">
+                                    <div class="form-group">
+                                        <label for="openTime" class="form-label">খোলার সময় *</label>
+                                        <input type="time" id="openTime" class="form-input" value="08:00" required>
+                                        <div id="openTimeError" class="form-error"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="closeTime" class="form-label">বন্ধের সময় *</label>
+                                        <input type="time" id="closeTime" class="form-input" value="22:00" required>
+                                        <div id="closeTimeError" class="form-error"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Special Services -->
+                            <div class="services-section">
+                                <h4><i class="fas fa-star"></i> বিশেষ সেবা</h4>
+                                <div class="services-grid">
+                                    <label class="service-checkbox">
+                                        <input type="checkbox" id="hasDelivery">
+                                        <div class="service-card">
+                                            <i class="fas fa-truck"></i>
+                                            <span>হোম ডেলিভারি</span>
+                                        </div>
+                                    </label>
+                                    
+                                    <label class="service-checkbox">
+                                        <input type="checkbox" id="hasOxygen">
+                                        <div class="service-card">
+                                            <i class="fas fa-lungs"></i>
+                                            <span>অক্সিজেন সিলিন্ডার</span>
+                                        </div>
+                                    </label>
+                                    
+                                    <label class="service-checkbox">
+                                        <input type="checkbox" id="hasEmergency">
+                                        <div class="service-card">
+                                            <i class="fas fa-ambulance"></i>
+                                            <span>জরুরি সেবা</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="step-navigation">
+                            <button type="button" class="btn btn-primary btn-next">
+                                পরবর্তী ধাপ
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Owner Information -->
+                    <div class="form-step" data-step="2">
+                        <div class="step-content">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="ownerName" class="form-label">
+                                        <i class="fas fa-user"></i>
+                                        মালিকের নাম *
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="ownerName" 
+                                        class="form-input" 
+                                        placeholder="পূর্ণ নাম"
+                                        required
+                                        maxlength="100"
+                                    >
+                                    <div id="ownerNameError" class="form-error"></div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="ownerPhone" class="form-label">
+                                        <i class="fas fa-mobile-alt"></i>
+                                        মালিকের ফোন *
+                                    </label>
+                                    <input 
+                                        type="tel" 
+                                        id="ownerPhone" 
+                                        class="form-input" 
+                                        placeholder="01XXXXXXXXX"
+                                        required
+                                        pattern="01[3-9][0-9]{8}"
+                                    >
+                                    <div id="ownerPhoneError" class="form-error"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="ownerNID" class="form-label">
+                                        <i class="fas fa-id-card"></i>
+                                        জাতীয় পরিচয়পত্র নম্বর *
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="ownerNID" 
+                                        class="form-input" 
+                                        placeholder="১০-১৭ ডিজিটের NID নম্বর"
+                                        required
+                                        minlength="10"
+                                        maxlength="17"
+                                        pattern="[0-9]+"
+                                    >
+                                    <div id="ownerNIDError" class="form-error"></div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="ownerEmail" class="form-label">
+                                        <i class="fas fa-envelope"></i>
+                                        মালিকের ইমেইল (ঐচ্ছিক)
+                                    </label>
+                                    <input 
+                                        type="email" 
+                                        id="ownerEmail" 
+                                        class="form-input" 
+                                        placeholder="owner@example.com"
+                                    >
+                                    <div id="ownerEmailError" class="form-error"></div>
+                                </div>
+                            </div>
+
+                            <!-- File Uploads -->
+                            <div class="upload-section">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="ownerPhoto" class="form-label">
+                                            <i class="fas fa-camera"></i>
+                                            মালিকের ছবি
+                                        </label>
+                                        <div class="file-upload-container">
+                                            <input 
+                                                type="file" 
+                                                id="ownerPhoto" 
+                                                accept="image/*"
+                                                class="file-input"
+                                            >
+                                            <label for="ownerPhoto" class="file-upload-btn">
+                                                <i class="fas fa-upload"></i>
+                                                ছবি নির্বাচন করুন
+                                            </label>
+                                            <div id="ownerPhotoPreview" class="file-preview"></div>
+                                        </div>
+                                        <small class="form-hint">সর্বোচ্চ ৫ MB, JPG/PNG</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="pharmacyLicense" class="form-label">
+                                            <i class="fas fa-certificate"></i>
+                                            ফার্মাসি লাইসেন্স
+                                        </label>
+                                        <div class="file-upload-container">
+                                            <input 
+                                                type="file" 
+                                                id="pharmacyLicense" 
+                                                accept="image/*,application/pdf"
+                                                class="file-input"
+                                            >
+                                            <label for="pharmacyLicense" class="file-upload-btn">
+                                                <i class="fas fa-upload"></i>
+                                                ফাইল নির্বাচন করুন
+                                            </label>
+                                            <div id="licensePreview" class="file-preview"></div>
+                                        </div>
+                                        <small class="form-hint">সর্বোচ্চ ৫ MB, JPG/PNG/PDF</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Account Credentials -->
+                            <div class="credentials-section">
+                                <h4><i class="fas fa-key"></i> অ্যাকাউন্ট তথ্য</h4>
+                                
+                                <div class="form-group">
+                                    <label for="username" class="form-label">
+                                        <i class="fas fa-user-circle"></i>
+                                        ইউজারনেম *
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="username" 
+                                        class="form-input" 
+                                        placeholder="ইংরেজিতে, কমপক্ষে ৩ অক্ষর"
+                                        required
+                                        minlength="3"
+                                        pattern="[a-zA-Z0-9_]+"
+                                    >
+                                    <div id="usernameError" class="form-error"></div>
+                                    <small class="form-hint">শুধু ইংরেজি অক্ষর, সংখ্যা এবং আন্ডারস্কোর (_) ব্যবহার করুন</small>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="password" class="form-label">
+                                            <i class="fas fa-lock"></i>
+                                            পাসওয়ার্ড *
+                                        </label>
+                                        <div class="password-input-container">
+                                            <input 
+                                                type="password" 
+                                                id="password" 
+                                                class="form-input" 
+                                                placeholder="কমপক্ষে ৬ অক্ষর"
+                                                required
+                                                minlength="6"
+                                            >
+                                            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div id="passwordError" class="form-error"></div>
+                                        <div id="passwordStrength" class="password-strength"></div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="confirmPassword" class="form-label">
+                                            <i class="fas fa-lock"></i>
+                                            পাসওয়ার্ড নিশ্চিত করুন *
+                                        </label>
+                                        <div class="password-input-container">
+                                            <input 
+                                                type="password" 
+                                                id="confirmPassword" 
+                                                class="form-input" 
+                                                placeholder="একই পাসওয়ার্ড আবার লিখুন"
+                                                required
+                                                minlength="6"
+                                            >
+                                            <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div id="confirmPasswordError" class="form-error"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="step-navigation">
+                            <button type="button" class="btn btn-outline btn-prev">
+                                <i class="fas fa-arrow-left"></i>
+                                পূর্ববর্তী
+                            </button>
+                            <button type="button" class="btn btn-primary btn-next">
+                                পরবর্তী ধাপ
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Medicine Selection -->
+                    <div class="form-step" data-step="3">
+                        <div class="step-content">
+                            <div class="medicine-selection-header">
+                                <h4><i class="fas fa-pills"></i> আপনার ওষুধ নির্বাচন করুন</h4>
+                                <p>যেসব ওষুধ আপনার ফার্মাসিতে পাওয়া যায় সেগুলো নির্বাচন করুন। পরে আরও যোগ করতে পারবেন।</p>
+                                
+                                <div class="selection-counter">
+                                    <span class="counter-text">নির্বাচিত: </span>
+                                    <span id="selectedMedicineCount" class="counter-number">0</span>
+                                    <span class="counter-text">টি ওষুধ</span>
+                                </div>
+                            </div>
+
+                            <!-- Medicine Search & Filter -->
+                            <div class="medicine-filters">
+                                <div class="filter-row">
+                                    <div class="search-group">
+                                        <i class="fas fa-search search-icon"></i>
+                                        <input 
+                                            type="text" 
+                                            id="medicineSearch" 
+                                            class="search-input" 
+                                            placeholder="ওষুধের নাম বা ব্যবহার খুঁজুন..."
+                                        >
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <select id="categoryFilter" class="form-select">
+                                            <option value="">সব ধরন</option>
+                                            <option value="fever">জ্বরের ওষুধ</option>
+                                            <option value="pain">ব্যথার ওষুধ</option>
+                                            <option value="allergy">এলার্জির ওষুধ</option>
+                                            <option value="gastric">গ্যাস্ট্রিকের ওষুধ</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Medicine Grid -->
+                            <div id="medicineGrid" class="medicine-grid">
+                                <!-- Medicines will be loaded by JavaScript -->
+                            </div>
+
+                            <div class="medicine-note">
+                                <div class="note-box">
+                                    <i class="fas fa-info-circle"></i>
+                                    <div>
+                                        <strong>গুরুত্বপূর্ণ:</strong> আপনি এখানে যেসব ওষুধ নির্বাচন করবেন, সেগুলোই কাস্টমাররা খুঁজে পাবেন। প্রয়োজনে পরে অ্যাডমিন প্যানেল থেকে আরও ওষুধ যোগ করতে পারবেন।
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="step-navigation">
+                            <button type="button" class="btn btn-outline btn-prev">
+                                <i class="fas fa-arrow-left"></i>
+                                পূর্ববর্তী
+                            </button>
+                            <button type="button" class="btn btn-primary btn-next">
+                                পরবর্তী ধাপ
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Confirmation -->
+                    <div class="form-step" data-step="4">
+                        <div class="step-content">
+                            <div class="confirmation-header">
+                                <i class="fas fa-check-circle confirmation-icon"></i>
+                                <h4>নিবন্ধনের তথ্য নিশ্চিত করুন</h4>
+                                <p>নিচের তথ্যগুলো ভালোভাবে পরীক্ষা করে নিন। সবকিছু সঠিক হলে নিবন্ধন সম্পন্ন করুন।</p>
+                            </div>
+
+                            <!-- Registration Summary -->
+                            <div id="registrationSummary" class="registration-summary">
+                                <!-- Summary will be loaded by JavaScript -->
+                            </div>
+
+                            <!-- Agreement -->
+                            <div class="agreement-section">
+                                <div class="agreement-box">
+                                    <label class="agreement-label">
+                                        <input type="checkbox" id="agreement" required>
+                                        <span class="checkmark"></span>
+                                        <div class="agreement-text">
+                                            <strong>আমি সম্মত আছি যে:</strong>
+                                            <ul>
+                                                <li>আমি নকল বা ভেজাল ওষুধ বিক্রয় করব না</li>
+                                                <li>প্রদত্ত সকল তথ্য সঠিক এবং সত্য</li>
+                                                <li>MediMap এর <a href="#" target="_blank">নিয়মাবলী</a> মেনে চলব</li>
+                                                <li>এই বিষয়ে সম্পূর্ণ দায়ভার আমার</li>
+                                            </ul>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Terms Preview -->
+                            <div class="terms-preview">
+                                <h5>গুরুত্বপূর্ণ নিয়মাবলী:</h5>
+                                <div class="terms-list">
+                                    <div class="term-item">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span>শুধুমাত্র বৈধ ওষুধ বিক্রয় করুন</span>
+                                    </div>
+                                    <div class="term-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span>স্টক নিয়মিত আপডেট করুন</span>
+                                    </div>
+                                    <div class="term-item">
+                                        <i class="fas fa-phone"></i>
+                                        <span>কাস্টমারদের সাথে ভদ্র ব্যবহার করুন</span>
+                                    </div>
+                                    <div class="term-item">
+                                        <i class="fas fa-money-bill"></i>
+                                        <span>সঠিক দাম প্রদান করুন</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="step-navigation">
+                            <button type="button" class="btn btn-outline btn-prev">
+                                <i class="fas fa-arrow-left"></i>
+                                পূর্ববর্তী
+                            </button>
+                            <button type="submit" class="btn btn-success btn-submit">
+                                <i class="fas fa-check"></i>
+                                নিবন্ধন সম্পন্ন করুন
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Success Message -->
+                <div id="successMessage" class="success-message hidden">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>স্বাগতম MediMap এ!</h3>
+                    <p>আপনার ফার্মাসি সফলভাবে নিবন্ধিত হয়েছে। আপনি এখন আপনার ড্যাশবোর্ডে প্রবেশ করতে পারেন।</p>
+                    <div class="success-actions">
+                        <button class="btn btn-primary" onclick="window.location.href='admin-dashboard.html'">
+                            <i class="fas fa-tachometer-alt"></i>
+                            ড্যাশবোর্ডে যান
+                        </button>
+                    </div>
+                    <div class="celebration">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>নিবন্ধন করা হচ্ছে...</p>
+            <small>অনুগ্রহ করে অপেক্ষা করুন</small>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/registration.js"></script>
+    <script src="js/maps.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+</html>

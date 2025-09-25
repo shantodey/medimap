@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediMap - খোঁজার ফলাফল</title>
+    <link rel="icon" type="image/x-icon" href="assets/logo.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kalpurush&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- CSS Files -->
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/search_results.css" rel="stylesheet">
+    <link href="css/responsive.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="index.html" class="logo">
+                    <div class="logo-placeholder">LOGO</div>
+                    <h1>MediMap</h1>
+                </a>
+                <a href="index.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    ফিরে যান
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Search Header -->
+    <section class="search-header">
+        <div class="container">
+            <div class="search-info">
+                <h2>খোঁজার ফলাফল</h2>
+                <div>
+                    খোঁজা হয়েছে: <span class="search-query" id="searchQuery">লোড হচ্ছে...</span>
+                </div>
+                <div class="results-count">
+                    <span id="resultsCount">0</span> টি ফার্মাসিতে পাওয়া গেছে
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters">
+        <div class="container">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label><strong>সাজান:</strong></label>
+                    <select class="filter-select" id="sortFilter">
+                        <option value="distance">দূরত্ব অনুযায়ী</option>
+                        <option value="price">দাম অনুযায়ী</option>
+                        <option value="availability">প্রাপ্যতা অনুযায়ী</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><strong>অবস্থা:</strong></label>
+                    <select class="filter-select" id="statusFilter">
+                        <option value="all">সব ফার্মাসি</option>
+                        <option value="open">খোলা আছে</option>
+                        <option value="closed">বন্ধ আছে</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><strong>দূরত্ব:</strong></label>
+                    <select class="filter-select" id="distanceFilter">
+                        <option value="all">সব দূরত্ব</option>
+                        <option value="500m">৫০০ মিটার</option>
+                        <option value="1km">১ কিলোমিটার</option>
+                        <option value="2km">২ কিলোমিটার</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results -->
+    <section class="container">
+        <div class="results-container">
+            <!-- Results List -->
+            <div class="results-list" id="resultsList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <!-- Map Sidebar -->
+            <div class="map-sidebar">
+                <h3 style="margin-bottom: 15px; color: #1e293b;">
+                    <i class="fas fa-map-marker-alt" style="color: #2563eb;"></i>
+                    ম্যাপে দেখুন
+                </h3>
+                <div class="map-container">
+                    <div class="map-placeholder">
+                        <i class="fas fa-map" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                        <p>Google Maps<br>লোড হচ্ছে...</p>
+                    </div>
+                </div>
+                <div class="location-info">
+                    <div class="current-location">
+                        <i class="fas fa-location-arrow"></i>
+                        আপনার অবস্থান: মিরপুর-১, ঢাকা
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="getCurrentLocation()" style="width: 100%;">
+                    <i class="fas fa-crosshairs"></i>
+                    আমার অবস্থান খুঁজুন
+                </button>
+            </div>
+        </div>
+    </section>
+
+    
+    <script src="js/firebase-config.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/maps.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
