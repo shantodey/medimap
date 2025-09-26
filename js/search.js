@@ -1,28 +1,67 @@
-// MediMap Search Results JavaScript
-// Load Google Maps API if not already loaded
-if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
-    const mapsScript = document.createElement('script');
-    mapsScript.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyCV4yFyJgyoLZfkFwPMH-KPXqRVQukWbDQ&libraries=places,geometry';
-    mapsScript.async = true;
-    mapsScript.defer = true;
-    document.head.appendChild(mapsScript);
-}
+// MediMap Search Results JavaScript - COMPLETELY REWRITTEN
+console.log('[Search] Starting search.js initialization...');
 
-// Load maps.js file if not already loaded
-if (!document.querySelector('script[src="js/maps.js"]')) {
-    const mapsDep = document.createElement('script');
-    mapsDep.src = 'js/maps.js';
-    document.head.appendChild(mapsDep);
-}
-// Add medicine-names.js script to the page if not already added
+// ===========================
+// 1. GLOBAL VARIABLES
+// ===========================
+let searchType, searchQuery, filteredResults = [];
+let currentSort = 'distance';
+let currentStatusFilter = 'all';
+let currentDistanceFilter = 'all';
+let currentClinicTypeFilter = 'all';
+let currentVisitTypeFilter = 'all';
+let isScriptsLoaded = false;
 
-if (!document.querySelector('script[src="js/medicine-names.js"]')) {
+// ===========================
+// 2. DEPENDENCY LOADING SYSTEM
+// ===========================
+function loadScript(src, callback) {
+    console.log('[Search] Loading script:', src);
+    if (document.querySelector(`script[src="${src}"]`) || document.querySelector(`script[src*="${src.split('/').pop().split('?')[0]}"]`)) {
+        console.log('[Search] Script already loaded:', src);
+        if (callback) callback();
+        return;
+    }
+    
     const script = document.createElement('script');
-    script.src = 'js/medicine-names.js';
+    script.src = src;
+    script.onload = () => {
+        console.log('[Search] Script loaded successfully:', src);
+        if (callback) callback();
+    };
+    script.onerror = () => {
+        console.error('[Search] Failed to load script:', src);
+        if (callback) callback(); // Continue even if failed
+    };
     document.head.appendChild(script);
 }
 
-// Sample pharmacy data for Mirpur-1 and Mirpur-12, 
+function loadAllDependencies(callback) {
+    console.log('[Search] Loading all dependencies...');
+    
+    // Load Google Maps API first
+    loadScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyCV4yFyJgyoLZfkFwPMH-KPXqRVQukWbDQ&libraries=places,geometry', () => {
+        console.log('[Search] Google Maps API loaded');
+        
+        // Then load maps.js
+        loadScript('js/maps.js', () => {
+            console.log('[Search] maps.js loaded');
+            
+            // Then load medicine-names.js
+            loadScript('js/medicine-names.js', () => {
+                console.log('[Search] medicine-names.js loaded');
+                
+                // Wait a bit for all scripts to initialize
+                setTimeout(() => {
+                    isScriptsLoaded = true;
+                    console.log('[Search] All dependencies loaded');
+                    if (callback) callback();
+                }, 100);
+            });
+        });
+    });
+}
+
 const pharmaciesData = [
     {
         id: 1,
@@ -308,309 +347,369 @@ const symptomMedicineMap = {
     "toothache": ["নাপা", "সার্জেল", "আইবিউপ্রোফেন"],
     "nasal-congestion": ["হিস্টাসিন", "রোক্সাডেক্স"]
 };
+// ===========================
+// 4. CORE FUNCTIONS
+// ===========================
 
-// Global variables
-let searchType, searchQuery, filteredResults = [];
-let currentSort = 'distance';
-let currentStatusFilter = 'all';
-let currentDistanceFilter = 'all';
-let currentClinicTypeFilter = 'all';
-let currentVisitTypeFilter = 'all';
-
-// Get current location - MOVED TO GLOBAL SCOPE
+// Get current location with proper error handling
 function getCurrentLocation() {
-    // Wait for MapsManager to be available
-    if (typeof MapsManager === 'undefined') {
+    console.log('[Search] getCurrentLocation called');
+    
+    const locationEl = document.querySelector('.current-location');
+    const locationText = document.getElementById('locationText');
+    
+    // Show loading state
+    if (locationEl) {
+        locationEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> অবস্থান খুঁজছি...';
+    }
+    if (locationText) {
+        locationText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> অবস্থান খুঁজছি...';
+    }
+
+    // Check if dependencies are loaded
+    if (!isScriptsLoaded || typeof MapsManager === 'undefined') {
+        console.log('[Search] Dependencies not ready, waiting...');
         setTimeout(getCurrentLocation, 500);
         return;
     }
 
-    const loading = document.querySelector('.map-placeholder');
-    if (loading) {
-        loading.innerHTML = '<i class="fas fa-spinner fa-spin"></i><br>অবস্থান খুঁজছি...';
-    }
-
-    // Use MapsManager's proper geolocation
+    // Use MapsManager geolocation
     MapsManager.getCurrentLocation()
         .then(position => {
-            console.log('[Search] Real location obtained:', position);
+            console.log('[Search] Location obtained:', position);
             
-            // Store globally for search filtering
+            // Store globally
             window.userLocation = position;
-            userLocation = position;
             
             // Update UI
-            const locationEl = document.querySelector('.current-location');
             if (locationEl) {
                 locationEl.innerHTML = `
-                    <i class="fas fa-location-arrow"></i>
-                    আপনার অবস্থান পাওয়া গেছে
+                    <i class="fas fa-check-circle" style="color: green;"></i>
+                    অবস্থান পাওয়া গেছে
                 `;
             }
             
-            // Refresh search results with real location
-            if (typeof displayResults === 'function') {
-                displayResults();
+            if (locationText) {
+                locationText.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${position.lat.toFixed(4)}, ${position.lng.toFixed(4)}`;
             }
+            
+            // Recenter map on user location
+            if (typeof MapsManager !== 'undefined' && MapsManager.initializeMap) {
+                MapsManager.initializeMap('map', {
+                    center: position,
+                    zoom: 16
+                }).then(() => {
+                    // Add pharmacy markers
+                    if (filteredResults && filteredResults.length > 0) {
+                        MapsManager.addPharmacyMarkers(filteredResults);
+                    }
+                    // Add user marker
+                    MapsManager.addUserMarker(position);
+                });
+            }
+            
+            // Refresh results with location-based filtering
+            displayResults();
         })
         .catch(error => {
             console.error('[Search] Location error:', error);
-            alert('অবস্থান খুঁজে পাওয়া যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।');
             
-            if (loading) {
-                loading.innerHTML = '<i class="fas fa-map"></i><br>Google Maps<br>লোড হচ্ছে...';
+            let errorMessage = 'অবস্থান পাওয়া যায়নি';
+            if (error.code === 1) {
+                errorMessage = 'অবস্থানের অনুমতি দিন';
+            } else if (error.code === 2) {
+                errorMessage = 'অবস্থান সেবা উপলব্ধ নেই';
+            } else if (error.code === 3) {
+                errorMessage = 'সময় শেষ';
+            }
+            
+            if (locationEl) {
+                locationEl.innerHTML = `<i class="fas fa-exclamation-triangle" style="color: red;"></i> ${errorMessage}`;
+            }
+            if (locationText) {
+                locationText.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${errorMessage}`;
             }
         });
 }
-// currentRadius is defined in maps.js
 
-// Debug function to check DOM elements
-function validateDOMElements() {
-    const requiredElements = [
-        { id: 'searchQuery', name: 'Search Query Display' },
-        { id: 'resultsList', name: 'Results List' },
-        { id: 'resultsCount', name: 'Results Count' }
-    ];
+// Get directions to pharmacy
+function getDirections(pharmacyId) {
+    console.log('[Search] getDirections called for pharmacy:', pharmacyId);
+    
+    const pharmacy = pharmaciesData.find(p => p.id === pharmacyId);
+    if (!pharmacy) {
+        alert('ফার্মেসি খুঁজে পাওয়া যায়নি');
+        return;
+    }
 
-    console.log('[Search] Validating DOM elements...');
-    let allFound = true;
+    const destination = {
+        lat: pharmacy.coordinates.lat,
+        lng: pharmacy.coordinates.lng
+    };
 
-    requiredElements.forEach(element => {
-        const domElement = document.getElementById(element.id);
-        const found = !!domElement;
-        console.log(`[Search] ${element.name} (${element.id}):`, found ? 'FOUND' : 'MISSING');
-        if (!found) {
-            allFound = false;
-            // Show user-friendly error if missing
-            if (!document.getElementById('search-error-message')) {
-                const errorDiv = document.createElement('div');
-                errorDiv.id = 'search-error-message';
-                errorDiv.style = 'color: red; font-weight: bold; margin: 20px;';
-                errorDiv.innerHTML = `
-                    <div class="no-results">
-                        <i class="fas fa-exclamation-triangle no-results-icon"></i>
-                        <h3>পেজের কিছু অংশ লোড হয়নি</h3>
-                        <p>সমস্যা: ${element.name} (${element.id}) খুঁজে পাওয়া যায়নি।<br>দয়া করে পেজ রিফ্রেশ করুন অথবা ডেভেলপারকে জানান।</p>
-                    </div>
-                `;
-                document.body.prepend(errorDiv);
+    // Get origin (user location or default)
+    let origin = window.userLocation;
+    
+    if (!origin) {
+        // Use default Mirpur coordinates as fallback
+        origin = { lat: 23.8223, lng: 90.3654 };
+        console.log('[Search] Using default origin:', origin);
+    } else {
+        console.log('[Search] Using user location as origin:', origin);
+    }
+
+    // Open Google Maps directions
+    const googleMapsUrl = `https://www.google.com/maps/dir/${origin.lat},${origin.lng}/${destination.lat},${destination.lng}`;
+    console.log('[Search] Opening directions URL:', googleMapsUrl);
+    
+    window.open(googleMapsUrl, '_blank');
+}
+
+// View pharmacy on map
+function viewOnMap(pharmacyId) {
+    console.log('[Search] viewOnMap called for pharmacy:', pharmacyId);
+    
+    const pharmacy = pharmaciesData.find(p => p.id === pharmacyId);
+    if (!pharmacy) {
+        alert('ফার্মেসি খুঁজে পাওয়া যায়নি');
+        return;
+    }
+
+    // Try to use integrated map if available
+    if (typeof MapsManager !== 'undefined' && MapsManager.centerOnPharmacy) {
+        MapsManager.centerOnPharmacy(pharmacyId);
+    } else {
+        // Fallback: Open in Google Maps
+        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${pharmacy.coordinates.lat},${pharmacy.coordinates.lng}`;
+        window.open(googleMapsUrl, '_blank');
+    }
+}
+
+// ===========================
+// 5. SEARCH AND FILTER FUNCTIONS
+// ===========================
+
+function filterPharmacies() {
+    try {
+        console.log('[Search] Filtering pharmacies with type:', searchType, 'query:', searchQuery);
+
+        let results = [...pharmaciesData];
+        console.log('[Search] Starting with', results.length, 'total pharmacies');
+
+        // Filter based on search type
+        if (searchType === 'medicine') {
+            if (searchQuery) {
+                results = results.filter(pharmacy => {
+                    return pharmacy.medicines && Object.keys(pharmacy.medicines).some(medicine =>
+                        medicine.toLowerCase().includes(searchQuery.toLowerCase())
+                    );
+                });
             }
+        } else if (searchType === 'symptom') {
+            try {
+                const symptoms = JSON.parse(searchQuery || '[]');
+                if (symptoms.length > 0) {
+                    const relevantMedicines = symptoms.flatMap(symptom => 
+                        symptomMedicineMap[symptom] || []
+                    );
+                    
+                    if (relevantMedicines.length > 0) {
+                        results = results.filter(pharmacy => {
+                            return pharmacy.medicines && Object.keys(pharmacy.medicines).some(medicine =>
+                                relevantMedicines.includes(medicine)
+                            );
+                        });
+                    }
+                }
+            } catch (parseError) {
+                console.error('[Search] Error parsing symptoms:', parseError);
+            }
+        }
+
+        // Apply location-based filtering if user location is available
+        if (window.userLocation && typeof MapsManager !== 'undefined' && MapsManager.calculateDistance) {
+            results.forEach(pharmacy => {
+                const distance = MapsManager.calculateDistance(
+                    window.userLocation.lat, window.userLocation.lng,
+                    pharmacy.coordinates.lat, pharmacy.coordinates.lng
+                );
+                pharmacy.distanceFromUser = distance;
+                pharmacy.distance = `${distance.toFixed(1)} কিমি`;
+                pharmacy.distanceValue = distance;
+            });
+
+            // Filter by current radius
+            const radius = window.currentRadius || 2000; // 2km default
+            results = results.filter(pharmacy => (pharmacy.distanceFromUser * 1000) <= radius);
+        }
+
+        // Apply other filters
+        if (currentStatusFilter === 'open') {
+            results = results.filter(pharmacy => pharmacy.isOpen);
+        } else if (currentStatusFilter === 'closed') {
+            results = results.filter(pharmacy => !pharmacy.isOpen);
+        }
+
+        console.log('[Search] Final filtered results:', results.length, 'pharmacies');
+        return results;
+    } catch (error) {
+        console.error('[Search] Error filtering pharmacies:', error);
+        return [];
+    }
+}
+
+function getRelevantMedicines(pharmacy) {
+    try {
+        if (!pharmacy?.medicines) return [];
+
+        let relevantMedicines = [];
+
+        if (searchType === 'medicine' && searchQuery) {
+            Object.entries(pharmacy.medicines).forEach(([name, details]) => {
+                if (name.toLowerCase().includes(searchQuery.toLowerCase())) {
+                    relevantMedicines.push({name, ...details});
+                }
+            });
+        } else if (searchType === 'symptom') {
+            try {
+                const symptoms = JSON.parse(searchQuery || '[]');
+                const targetMedicines = symptoms.flatMap(symptom => symptomMedicineMap[symptom] || []);
+
+                Object.entries(pharmacy.medicines).forEach(([name, details]) => {
+                    if (targetMedicines.includes(name)) {
+                        relevantMedicines.push({name, ...details});
+                    }
+                });
+            } catch (parseError) {
+                console.error('[Search] Error parsing symptoms in getRelevantMedicines:', parseError);
+            }
+        }
+
+        return relevantMedicines;
+    } catch (error) {
+        console.error('[Search] Error getting relevant medicines:', error);
+        return [];
+    }
+}
+
+function sortResults() {
+    if (!Array.isArray(filteredResults)) return;
+    
+    filteredResults.sort((a, b) => {
+        switch (currentSort) {
+            case 'distance':
+                return (a.distanceValue || 0) - (b.distanceValue || 0);
+            case 'availability':
+                if (a.isOpen && !b.isOpen) return -1;
+                if (!a.isOpen && b.isOpen) return 1;
+                return (a.distanceValue || 0) - (b.distanceValue || 0);
+            default:
+                return 0;
         }
     });
-    return allFound;
 }
 
-// Check localStorage data
-function validateSearchData() {
-    console.log('[Search] Validating search data...');
-    const searchType = localStorage.getItem('searchType');
-    const searchQuery = localStorage.getItem('searchQuery');
+// ===========================
+// 6. DISPLAY FUNCTIONS
+// ===========================
 
-    console.log('[Search] localStorage searchType:', searchType);
-    console.log('[Search] localStorage searchQuery:', searchQuery);
-
-    if (!searchType && !searchQuery) {
-        console.warn('[Search] No search data found in localStorage - user may have navigated directly to results page');
-        // Set default test data for debugging
-        localStorage.setItem('searchType', 'symptom');
-        localStorage.setItem('searchQuery', '["fever"]');
-        console.log('[Search] Set default fever search for testing');
-        return true;
-    }
-
-    return !!(searchType && searchQuery);
-}
-
-// Initialize page when DOM loads
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('[Search] ==================== SEARCH RESULTS PAGE STARTING ====================');
-    console.log('[Search] Current URL:', window.location.href);
-    console.log('[Search] Current time:', new Date().toISOString());
-
-    // Validate basic data availability
-    console.log('[Search] Pharmacy data available:', Array.isArray(pharmaciesData), pharmaciesData.length || 0, 'pharmacies');
-    console.log('[Search] Symptom mapping available:', typeof symptomMedicineMap, Object.keys(symptomMedicineMap || {}).length, 'symptoms');
-
-    // Validate DOM elements first
-    if (!validateDOMElements()) {
-        console.error('[Search] CRITICAL: Required DOM elements are missing!');
-        // Error message is already shown by validateDOMElements
-        return;
-    }
-
-    // Validate search data
-    if (!validateSearchData()) {
-        // Force default test data for demo/debug
-        localStorage.setItem('searchType', 'symptom');
-        localStorage.setItem('searchQuery', '["fever"]');
-        console.warn('[Search] No search data found, setting default fever search and reloading...');
-        location.reload();
-        return;
-    }
-
-    console.log('[Search] All validations passed. Starting initialization...');
-
-    // Call the main initialization function
-    const success = initializeSearchPage();
-
-    if (success) {
-        try {
-            // Load search data first
-            loadSearchData();
-            setupFilters();
-            initializeMap();
-        } catch (setupError) {
-            console.error('[Search] Error in setup functions:', setupError);
-        }
-    }
-});
-
-// Emergency fallback - try to initialize immediately if DOM is already ready
-if (document.readyState === 'loading') {
-    console.log('[Search] DOM still loading, waiting for DOMContentLoaded...');
-} else {
-    console.log('[Search] DOM already loaded, initializing immediately...');
-    setTimeout(() => {
-        console.log('[Search] Emergency initialization attempt...');
-        if (initializeSearchPage()) {
-            try {
-                loadSearchData();
-                setupFilters();
-                initializeMap();
-            } catch (setupError) {
-                console.error('[Search] Error in emergency setup functions:', setupError);
-            }
-        }
-    }, 50);
-}
-
-// Main initialization function
-function initializeSearchPage() {
-    console.log('[Search] ==================== INITIALIZING SEARCH PAGE ====================');
-
+function displayResults() {
     try {
-        // Quick check if page elements exist
-        const searchQueryEl = document.getElementById('searchQuery');
-        const resultsListEl = document.getElementById('resultsList');
-        const resultsCountEl = document.getElementById('resultsCount');
-        if (!searchQueryEl || !resultsListEl || !resultsCountEl) {
-            console.error('[Search] Critical DOM elements missing!');
-            if (resultsListEl) {
-                resultsListEl.innerHTML = '<div class="loading">পেজ লোড হচ্ছে... (কিছু অংশ পাওয়া যায়নি)</div>';
-            }
-            if (!document.getElementById('search-error-message')) {
-                const errorDiv = document.createElement('div');
-                errorDiv.id = 'search-error-message';
-                errorDiv.style = 'color: red; font-weight: bold; margin: 20px;';
-                errorDiv.innerHTML = `
-                    <div class="no-results">
-                        <i class="fas fa-exclamation-triangle no-results-icon"></i>
-                        <h3>পেজের কিছু অংশ লোড হয়নি</h3>
-                        <p>সমস্যা: searchQuery/resultsList/resultsCount DOM এলিমেন্ট খুঁজে পাওয়া যায়নি।<br>দয়া করে পেজ রিফ্রেশ করুন অথবা ডেভেলপারকে জানান।</p>
+        console.log('[Search] Displaying search results...');
+        
+        const resultsList = document.getElementById('resultsList');
+        const resultsCountElement = document.getElementById('resultsCount');
+        
+        if (!resultsList) {
+            console.error('[Search] Results list element not found!');
+            return;
+        }
+
+        // Filter and sort pharmacies
+        filteredResults = filterPharmacies();
+        sortResults();
+
+        // Update results count
+        if (resultsCountElement) {
+            resultsCountElement.textContent = filteredResults.length;
+        }
+
+        if (filteredResults.length === 0) {
+            resultsList.innerHTML = `
+                <div class="no-results" style="text-align: center; padding: 40px; color: #6b7280;">
+                    <i class="fas fa-search" style="font-size: 4rem; color: #d1d5db; margin-bottom: 1rem;"></i>
+                    <h3 style="color: #374151; margin-bottom: 1rem;">কোন ফার্মেসি পাওয়া যায়নি</h3>
+                    <p style="margin-bottom: 2rem;">আপনার অনুসন্ধানের জন্য কোন ফার্মেসি খুঁজে পাওয়া যায়নি।</p>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button onclick="location.reload()" class="btn btn-secondary">
+                            <i class="fas fa-sync"></i> আবার চেষ্টা করুন
+                        </button>
+                        <a href="index.html" class="btn btn-primary">
+                            <i class="fas fa-search"></i> নতুন অনুসন্ধান
+                        </a>
                     </div>
-                `;
-                document.body.prepend(errorDiv);
-            }
-            return false;
-        }
-
-        // Load and display search data
-        const searchType = localStorage.getItem('searchType') || 'symptom';
-        const searchQuery = localStorage.getItem('searchQuery') || '["fever"]';
-
-        console.log('[Search] Quick init - Type:', searchType, 'Query:', searchQuery);
-
-        // Set defaults if empty (for testing)
-        if (!localStorage.getItem('searchType')) {
-            localStorage.setItem('searchType', 'symptom');
-            localStorage.setItem('searchQuery', '["fever"]');
-            console.log('[Search] Set default test search data');
-        }
-
-        // Show loading initially
-        resultsListEl.innerHTML = '<div class="loading" style="text-align:center; padding:40px;">ফলাফল লোড হচ্ছে...</div>';
-        searchQueryEl.textContent = 'অনুসন্ধান চলছে...';
-        resultsCountEl.textContent = '0';
-
-        // Load search data first before displaying results
-        try {
-            loadSearchData();
-        } catch (loadError) {
-            console.error('[Search] Load search data failed:', loadError);
-        }
-
-        // Try to display results immediately
-        setTimeout(() => {
-            try {
-                displayResults();
-            } catch (displayError) {
-                console.error('[Search] Display results failed, using fallback:', displayError);
-
-                // Emergency fallback - show basic results
-                showEmergencyResults(searchType, searchQuery, resultsListEl, searchQueryEl, resultsCountEl);
-            }
-        }, 200);
-
-        return true;
-    } catch (error) {
-        console.error('[Search] Emergency initialization failed:', error);
-        return false;
-    }
-}
-
-// Emergency fallback to show basic results
-function showEmergencyResults(searchType, searchQuery, resultsListEl, searchQueryEl, resultsCountEl) {
-    console.log('[Search] Using emergency fallback display');
-
-    try {
-        // Set search query display
-        if (searchType === 'symptom') {
-            searchQueryEl.textContent = 'জ্বর';
-        } else if (searchType === 'medicine') {
-            searchQueryEl.textContent = searchQuery || 'ওষুধ অনুসন্ধান';
-        } else {
-            searchQueryEl.textContent = 'জরুরি ওষুধ';
-        }
-
-        // Show basic pharmacy results
-        const feverPharmacies = [
-            { name: 'Popular Pharmacy', address: 'মিরপুর-১২, ঢাকা', phone: '01711-123456', medicine: 'নাপা - ২.৫ টাকা' },
-            { name: 'Square Pharmacy', address: 'কাজীপাড়া মোড়, মিরপুর-১২, ঢাকা', phone: '01811-234567', medicine: 'নাপা - ৩ টাকা' }
-        ];
-
-        resultsCountEl.textContent = feverPharmacies.length;
-
-        resultsListEl.innerHTML = feverPharmacies.map(pharmacy => `
-            <div class="pharmacy-card" style="border: 1px solid #ddd; margin: 10px 0; padding: 15px; border-radius: 8px;">
-                <h3 style="color: #2563eb; margin: 0 0 10px 0;">${pharmacy.name}</h3>
-                <p style="margin: 5px 0;"><i class="fas fa-map-marker-alt"></i> ${pharmacy.address}</p>
-                <p style="margin: 5px 0;"><i class="fas fa-pills"></i> ${pharmacy.medicine}</p>
-                <p style="margin: 5px 0;"><i class="fas fa-phone"></i> ${pharmacy.phone}</p>
-                <div style="margin-top: 10px;">
-                    <button onclick="window.location.href='tel:${pharmacy.phone}'" class="btn btn-success" style="margin-right: 10px;">
-                        <i class="fas fa-phone"></i> ফোন করুন
-                    </button>
                 </div>
-            </div>
-        `).join('');
+            `;
+            return;
+        }
 
-        console.log('[Search] Emergency results displayed successfully');
-    } catch (emergencyError) {
-        console.error('[Search] Even emergency fallback failed:', emergencyError);
-        resultsListEl.innerHTML = `
-            <div style="text-align: center; padding: 40px;">
-                <h3>জ্বরের ওষুধের জন্য যোগাযোগ করুন:</h3>
-                <p><strong>Popular Pharmacy:</strong> 01711-123456</p>
-                <p><strong>Square Pharmacy:</strong> 01811-234567</p>
-                <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px;">
-                    আবার চেষ্টা করুন
-                </button>
-            </div>
-        `;
+        // Generate HTML for pharmacy cards
+        resultsList.innerHTML = filteredResults.map(pharmacy => {
+            const relevantMedicines = getRelevantMedicines(pharmacy);
+            
+            return `
+                <div class="card">
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h2>${pharmacy.name}</h2>
+                            <span class="status" style="color:${pharmacy.isOpen ? 'green' : 'red'};">
+                                ${pharmacy.isOpen ? 'খোলা' : 'বন্ধ'}
+                            </span>
+                        </div>
+
+                        <div class="info">${pharmacy.address} · ${pharmacy.distance}</div>
+
+                        <div class="medicine-list">
+                            ${relevantMedicines.length > 0 ? relevantMedicines.map(med => `
+                                <div class="medicine-item">
+                                    <span>💊 ${med.name}</span>
+                                    <span>৳ ${med.price} টাকা | স্টক: ${med.stock}</span>
+                                </div>
+                            `).join('') : `
+                                <div class="info">এই ফার্মেসিতে আপনার খোঁজা ওষুধ নেই।</div>
+                            `}
+                        </div>
+
+                        <div class="info">⏰ ${pharmacy.openingHours}</div>
+                        <div class="contact">
+                            <i class="fa-solid fa-phone"></i>
+                            <a href="tel:${pharmacy.phone}">${pharmacy.phone}</a>
+                        </div>
+
+                        <div class="buttons">
+                            <button class="map-btn" onclick="viewOnMap(${pharmacy.id})">
+                                🗺 ম্যাপে দেখুন
+                            </button>
+                            <button class="dir-btn" onclick="getDirections(${pharmacy.id})">
+                                দিক-নির্দেশনা
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Update map markers if available
+        if (typeof MapsManager !== 'undefined' && MapsManager.addPharmacyMarkers && filteredResults.length > 0) {
+            MapsManager.addPharmacyMarkers(filteredResults);
+        }
+
+        console.log('[Search] Results displayed successfully');
+    } catch (error) {
+        console.error('[Search] Error displaying results:', error);
     }
 }
 
-// Load search data from localStorage
 function loadSearchData() {
     try {
         console.log('[Search] Loading search data from localStorage...');
@@ -621,32 +720,20 @@ function loadSearchData() {
         console.log('[Search] Search type:', searchType);
         console.log('[Search] Search query:', searchQuery);
 
-        // Update search query display
         const searchQueryElement = document.getElementById('searchQuery');
-
-        if (!searchQueryElement) {
-            console.warn('[Search] Search query element not found!');
-            return;
-        }
+        if (!searchQueryElement) return;
 
         if (searchType === 'medicine') {
             searchQueryElement.textContent = searchQuery || 'কোন ওষুধ নির্বাচিত হয়নি';
         } else if (searchType === 'symptom') {
             try {
                 const symptoms = searchQuery ? JSON.parse(searchQuery) : [];
-                console.log('[Search] Parsed symptoms:', symptoms);
-
                 const symptomNames = {
                     'fever': 'জ্বর',
                     'cold': 'সর্দি',
                     'headache': 'মাথা ব্যথা',
-                    'diarrhea': 'পাতলা পায়খানা',
-                    'body-pain': 'হাত/পায়ে ব্যথা',
-                    'allergy': 'এলার্জি',
                     'gastric': 'গ্যাস্ট্রিক',
-                    'asthma': 'এজমা',
-                    'toothache': 'দাঁতের ব্যথা',
-                    'nasal-congestion': 'নাক বন্ধ'
+                    'body-pain': 'হাত/পায়ে ব্যথা'
                 };
 
                 if (symptoms.length > 0) {
@@ -659,420 +746,16 @@ function loadSearchData() {
                 console.error('[Search] Error parsing symptoms:', parseError);
                 searchQueryElement.textContent = 'লক্ষণ পার্স করতে সমস্যা হয়েছে';
             }
-        } else if (searchType === 'emergency') {
-            searchQueryElement.textContent = 'অক্সিজেন সিলিন্ডার';
         } else {
             searchQueryElement.textContent = 'অজানা খোঁজের ধরন';
         }
-
-        console.log('[Search] Search data loaded successfully');
     } catch (error) {
         console.error('[Search] Error loading search data:', error);
-
-        // Fallback values
-        searchType = 'medicine';
-        searchQuery = '';
-
-        const searchQueryElement = document.getElementById('searchQuery');
-        if (searchQueryElement) {
-            searchQueryElement.textContent = 'খোঁজার তথ্য লোড করতে সমস্যা হয়েছে';
-        }
     }
 }
 
-// Display search results
-function displayResults() {
-    try {
-        console.log('[Search] Displaying search results...');
-        const resultsList = document.getElementById('resultsList');
-        const resultsCountElement = document.getElementById('resultsCount');
-        if (!resultsList) {
-            console.error('[Search] Results list element not found!');
-            if (!document.getElementById('search-error-message')) {
-                const errorDiv = document.createElement('div');
-                errorDiv.id = 'search-error-message';
-                errorDiv.style = 'color: red; font-weight: bold; margin: 20px;';
-                errorDiv.innerHTML = `
-                    <div class="no-results">
-                        <i class="fas fa-exclamation-triangle no-results-icon"></i>
-                        <h3>ফলাফল দেখাতে সমস্যা হয়েছে</h3>
-                        <p>সমস্যা: Results List DOM এলিমেন্ট খুঁজে পাওয়া যায়নি।</p>
-                    </div>
-                `;
-                document.body.prepend(errorDiv);
-            }
-            return;
-        }
-        if (!resultsCountElement) {
-            console.error('[Search] Results count element not found!');
-        }
-
-        console.log('[Search] Filtering pharmacies...');
-        try {
-            filteredResults = filterPharmacies();
-        } catch (err) {
-            filteredResults = [];
-            console.error('[Search] filterPharmacies threw error:', err);
-        }
-        console.log('[Search] Filtered results:', filteredResults.length, 'pharmacies found');
-
-        // Sort results
-        console.log('[Search] Sorting results...');
-        try {
-            sortResults();
-        } catch (err) {
-            console.error('[Search] sortResults threw error:', err);
-        }
-
-        // Update results count
-        if (resultsCountElement) {
-            resultsCountElement.textContent = filteredResults.length;
-        }
-
-        console.log('[Search] Final results count:', filteredResults.length);
-
-    if (!Array.isArray(filteredResults) || filteredResults.length === 0) {
-        console.log('[Search] No results found, showing appropriate message.');
-
-        // Show no results message instead of forcing demo data
-        if (resultsCountElement) resultsCountElement.textContent = '0';
-        resultsList.innerHTML = `
-            <div class="no-results" style="text-align: center; padding: 40px; color: #6b7280;">
-                <i class="fas fa-search" style="font-size: 4rem; color: #d1d5db; margin-bottom: 1rem;"></i>
-                <h3 style="color: #374151; margin-bottom: 1rem;">কোন ফার্মাসি পাওয়া যায়নি</h3>
-                <p style="margin-bottom: 2rem;">আপনার অনুসন্ধানের জন্য কোন ফার্মাসি খুঁজে পাওয়া যায়নি।</p>
-                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <button onclick="location.reload()" class="btn btn-secondary">
-                        <i class="fas fa-sync"></i> আবার চেষ্টা করুন
-                    </button>
-                    <a href="index.html" class="btn btn-primary">
-                        <i class="fas fa-search"></i> নতুন অনুসন্ধান
-                    </a>
-                </div>
-                <div style="margin-top: 20px; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
-                    <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>পরামর্শ:</strong></p>
-                    <ul style="color: #6b7280; font-size: 0.9rem; text-align: left;">
-                        <li>ভিন্ন ওষুধের নাম খোঁজ করুন</li>
-                        <li>ভিন্ন এলাকায় খোঁজ করুন</li>
-                        <li>ফিল্টার পরিবর্তন করুন</li>
-                    </ul>
-                </div>
-            </div>
-        `;
-        return;
-    }
-
-console.log('[Search] Generating HTML for', filteredResults.length, 'pharmacies');
-resultsList.innerHTML = filteredResults.map(pharmacy => {
-    let relevantMedicines = [];
-    try {
-        relevantMedicines = getRelevantMedicines(pharmacy);
-    } catch (err) {
-        relevantMedicines = [];
-        console.error('[Search] getRelevantMedicines threw error:', err);
-    }
-    return `
-      <div class="card">
-        <div class="card-content">
-          <div class="card-header">
-            <h2 >${pharmacy.name}</h2>
-            <span class="status" style="color:${pharmacy.isOpen ? 'green' : 'red'};">
-              ${pharmacy.isOpen ? 'খোলা' : 'বন্ধ'}
-            </span>
-          </div>
-
-          <div class="info"> ${pharmacy.address} · ${pharmacy.distance}</div>
-
-          <div class="medicine-list">
-            ${relevantMedicines.length > 0 ? relevantMedicines.map(med => `
-              <div class="medicine-item">
-                <span>💊 ${med.name}</span>
-                <span>৳ ${med.price} টাকা | স্টক: ${med.stock}</span>
-              </div>
-            `).join('') : `
-              <div class="info">এই ফার্মাসিতে আপনার খোঁজা ওষুধ নেই।</div>
-            `}
-          </div>
-
-          <div class="info">⏰ ${pharmacy.openingHours}</div>
-          <div class="contact"> <i class="fa-solid fa-phone"></i><a href="">${pharmacy.phone}</a> </div>
-
-          <div class="buttons">
-            <button class="map-btn" onclick="viewOnMap(${pharmacy.id})">📍 ম্যাপে দেখুন</button>
-            <button class="dir-btn" onclick="getDirections(${pharmacy.id})">দিক-নির্দেশনা</button>
-          </div>
-        </div>
-      </div>
-    `;
-}).join('');
-
-        console.log('[Search] Results displayed successfully');
-    } catch (error) {
-        console.error('[Search] Error displaying results:', error);
-
-        const resultsList = document.getElementById('resultsList');
-        const resultsCountElement = document.getElementById('resultsCount');
-
-        if (resultsList) {
-            resultsList.innerHTML = `
-                <div class="no-results">
-                    <i class="fas fa-exclamation-triangle no-results-icon"></i>
-                    <h3>ফলাফল দেখাতে সমস্যা হয়েছে</h3>
-                    <p>দুঃখিত, অনুসন্ধানের ফলাফল প্রদর্শন করতে সমস্যা হয়েছে।</p>
-                    <div style="margin: 20px 0;">
-                        <button onclick="location.reload()" class="btn btn-secondary" style="margin-right: 10px;">
-                            <i class="fas fa-sync"></i>
-                            আবার চেষ্টা করুন
-                        </button>
-                        <a href="index.html" class="btn btn-primary">
-                            নতুন খোঁজ শুরু করুন
-                        </a>
-                    </div>
-                </div>
-            `;
-        }
-
-        if (resultsCountElement) {
-            resultsCountElement.textContent = '0';
-        }
-    }
-}
-
-// Filter pharmacies based on search criteria
-function filterPharmacies() {
-    try {
-        console.log('[Search] Filtering pharmacies with type:', searchType, 'query:', searchQuery);
-
-        if (!Array.isArray(pharmaciesData) || pharmaciesData.length === 0) {
-            console.warn('[Search] No pharmacy data available');
-            return [];
-        }
-
-        let results = [...pharmaciesData];
-        console.log('[Search] Starting with', results.length, 'total pharmacies');
-
-        // Filter based on search type
-        if (searchType === 'medicine') {
-            if (!searchQuery) {
-                console.warn('[Search] Empty medicine search query, showing all pharmacies');
-                // Don't return empty array, show all pharmacies instead
-            } else {
-                results = results.filter(pharmacy => {
-                    if (!pharmacy.medicines || typeof pharmacy.medicines !== 'object') {
-                        return false;
-                    }
-                    return Object.keys(pharmacy.medicines).some(medicine =>
-                        medicine.toLowerCase().includes(searchQuery.toLowerCase())
-                    );
-                });
-                console.log('[Search] Medicine search filtered to', results.length, 'pharmacies');
-            }
-        } else if (searchType === 'symptom') {
-            try {
-                if (!searchQuery) {
-                    console.warn('[Search] Empty symptom search query, showing all pharmacies');
-                    // Don't return empty array, show all pharmacies instead
-                } else {
-                    const symptoms = JSON.parse(searchQuery);
-                    console.log('[Search] Searching for symptoms:', symptoms);
-
-                    if (!Array.isArray(symptoms) || symptoms.length === 0) {
-                        console.warn('[Search] No symptoms to search for, showing all pharmacies');
-                        // Don't return empty array, show all pharmacies instead
-                    } else {
-                        const relevantMedicines = symptoms.flatMap(symptom => {
-                            const medicines = symptomMedicineMap[symptom];
-                            console.log(`[Search] Symptom "${symptom}" maps to medicines:`, medicines);
-                            return medicines || [];
-                        });
-
-                        console.log('[Search] All relevant medicines for symptoms:', relevantMedicines);
-
-                        if (relevantMedicines.length === 0) {
-                            console.warn('[Search] No medicines found for selected symptoms, showing all pharmacies');
-                            // Don't return empty array, show all pharmacies instead
-                        } else {
-                            results = results.filter(pharmacy => {
-                                if (!pharmacy.medicines || typeof pharmacy.medicines !== 'object') {
-                                    return false;
-                                }
-                                const hasRelevantMedicine = Object.keys(pharmacy.medicines).some(medicine =>
-                                    relevantMedicines.includes(medicine)
-                                );
-
-                                if (hasRelevantMedicine) {
-                                    console.log(`[Search] Pharmacy "${pharmacy.name}" has relevant medicines:`,
-                                              Object.keys(pharmacy.medicines).filter(m => relevantMedicines.includes(m)));
-                                }
-
-                                return hasRelevantMedicine;
-                            });
-
-                            console.log('[Search] Symptom search filtered to', results.length, 'pharmacies');
-                        }
-                    }
-                }
-            } catch (parseError) {
-                console.error('[Search] Error parsing symptoms:', parseError);
-                return [];
-            }
-        } else if (searchType === 'emergency') {
-            results = results.filter(pharmacy => {
-                if (!pharmacy.medicines || typeof pharmacy.medicines !== 'object') {
-                    return false;
-                }
-                return Object.keys(pharmacy.medicines).some(medicine =>
-                    medicine.includes('অক্সিজেন')
-                );
-            });
-
-            console.log('[Search] Emergency search filtered to', results.length, 'pharmacies');
-        } else {
-            console.warn('[Search] Unknown search type:', searchType);
-        }
-
-    // Apply location-based filtering if user location is available
-    if (window.userLocation && typeof MapsManager !== 'undefined' && MapsManager.filterPharmaciesByLocation) {
-        results = MapsManager.filterPharmaciesByLocation(
-            results,
-            window.userLocation.lat,
-            window.userLocation.lng,
-            window.currentRadius
-        );
-
-        // Update distance display for each pharmacy
-        results.forEach(pharmacy => {
-            if (pharmacy.distanceFromUser !== undefined) {
-                pharmacy.distance = `${pharmacy.distanceFromUser.toFixed(1)} কিমি`;
-                pharmacy.distanceValue = pharmacy.distanceFromUser;
-            }
-        });
-    }
-
-    // Apply status filter
-    if (currentStatusFilter === 'open') {
-        results = results.filter(pharmacy => pharmacy.isOpen);
-    } else if (currentStatusFilter === 'closed') {
-        results = results.filter(pharmacy => !pharmacy.isOpen);
-    }
-
-    // Apply distance filter
-    if (currentDistanceFilter !== 'all') {
-        const maxDistance = parseFloat(currentDistanceFilter.replace('km', '').replace('m', ''));
-        const isMeters = currentDistanceFilter.includes('m');
-        const maxDistanceKm = isMeters ? maxDistance / 1000 : maxDistance;
-
-        results = results.filter(pharmacy => pharmacy.distanceValue <= maxDistanceKm);
-    }
-
-    // Apply clinic type filter
-    if (currentClinicTypeFilter !== 'all') {
-        results = results.filter(pharmacy => pharmacy.type === currentClinicTypeFilter);
-    }
-
-     // Apply visit type filter
-    if (currentVisitTypeFilter !== 'all') {
-        // Ensure visitType is handled as a boolean
-        if (currentVisitTypeFilter === 'open') {
-            results = results.filter(pharmacy => pharmacy.visitType === 'open');
-        } else if (currentVisitTypeFilter === 'closed') {
-            results = results.filter(pharmacy => pharmacy.visitType === 'closed');
-        }
-    }
-
-        console.log('[Search] Final filtered results:', results.length, 'pharmacies');
-        return results;
-    } catch (error) {
-        console.error('[Search] Error filtering pharmacies:', error);
-        return []; // Return empty array on error
-    }
-}
-
-
-// Get relevant medicines for a pharmacy
-function getRelevantMedicines(pharmacy) {
-    try {
-        if (!pharmacy || !pharmacy.medicines || typeof pharmacy.medicines !== 'object') {
-            console.warn('[Search] Invalid pharmacy data for getRelevantMedicines:', pharmacy);
-            return [];
-        }
-
-        let relevantMedicines = [];
-
-        if (searchType === 'medicine') {
-            if (!searchQuery) {
-                return [];
-            }
-
-            Object.entries(pharmacy.medicines).forEach(([name, details]) => {
-                if (name.toLowerCase().includes(searchQuery.toLowerCase())) {
-                    relevantMedicines.push({name, ...details});
-                }
-            });
-        } else if (searchType === 'symptom') {
-            try {
-                if (!searchQuery) {
-                    return [];
-                }
-
-                const symptoms = JSON.parse(searchQuery);
-                const targetMedicines = symptoms.flatMap(symptom => symptomMedicineMap[symptom] || []);
-
-                Object.entries(pharmacy.medicines).forEach(([name, details]) => {
-                    if (targetMedicines.includes(name)) {
-                        relevantMedicines.push({name, ...details});
-                    }
-                });
-            } catch (parseError) {
-                console.error('[Search] Error parsing symptoms in getRelevantMedicines:', parseError);
-                return [];
-            }
-        } else if (searchType === 'emergency') {
-            Object.entries(pharmacy.medicines).forEach(([name, details]) => {
-                if (name.includes('অক্সিজেন')) {
-                    relevantMedicines.push({name, ...details});
-                }
-            });
-        }
-
-        return relevantMedicines;
-    } catch (error) {
-        console.error('[Search] Error getting relevant medicines:', error);
-        return [];
-    }
-}
-
-
-// Sort results based on current sort criteria
-function sortResults() {
-    filteredResults.sort((a, b) => {
-        switch (currentSort) {
-            case 'distance':
-                return a.distanceValue - b.distanceValue;
-            case 'price':
-                const aPrice = getMinPrice(a);
-                const bPrice = getMinPrice(b);
-                return aPrice - bPrice;
-            case 'availability':
-                if (a.isOpen && !b.isOpen) return -1;
-                if (!a.isOpen && b.isOpen) return 1;
-                return a.distanceValue - b.distanceValue;
-            default:
-                return 0;
-        }
-    });
-}
-
-// Get minimum price of relevant medicines in pharmacy
-function getMinPrice(pharmacy) {
-    const relevantMedicines = getRelevantMedicines(pharmacy);
-    if (relevantMedicines.length === 0) return Infinity;
-    return Math.min(...relevantMedicines.map(med => med.price));
-}
-
-// Setup filter event listeners
 function setupFilters() {
-    // Add null checks for all filter elements
+    // Setup filter event listeners
     const sortFilter = document.getElementById('sortFilter');
     if (sortFilter) {
         sortFilter.addEventListener('change', (e) => {
@@ -1089,379 +772,101 @@ function setupFilters() {
         });
     }
 
-    const distanceFilter = document.getElementById('distanceFilter');
-    if (distanceFilter) {
-        distanceFilter.addEventListener('change', (e) => {
-            currentDistanceFilter = e.target.value;
-            displayResults();
-        });
-    }
-
-    const clinicTypeFilter = document.getElementById('clinicTypeFilter');
-    if (clinicTypeFilter) {
-        clinicTypeFilter.addEventListener('change', (e) => {
-            currentClinicTypeFilter = e.target.value;
-            displayResults();
-        });
-    }
-
-    const visitTypeFilter = document.getElementById('visitTypeFilter');
-    if (visitTypeFilter) {
-        visitTypeFilter.addEventListener('change', (e) => {
-            currentVisitTypeFilter = e.target.value;
-            displayResults();
-        });
-    }
-
-    // Add radius filter listener
     const radiusFilter = document.getElementById('radiusFilter');
     if (radiusFilter) {
         radiusFilter.addEventListener('change', (e) => {
             window.currentRadius = parseInt(e.target.value);
-        if (typeof MapsManager !== 'undefined' && MapsManager.setSearchRadius) {
-            MapsManager.setSearchRadius(window.currentRadius);
-        }
-        displayResults();
-    });
-
-    document.getElementById('availabilityFilter')?.addEventListener('change', displayResults);
-}
-
-// Get directions to pharmacy
-function getDirections(pharmacyId) {
-    const pharmacy = pharmaciesData.find(p => p.id === pharmacyId);
-    if (!pharmacy) return;
-
-    const destination = `${pharmacy.coordinates.lat},${pharmacy.coordinates.lng}`;
-    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}&destination_place_id=${pharmacy.name}`;
-
-    window.open(googleMapsUrl, '_blank');
-}
-
-// Call pharmacy
-function callPharmacy(phoneNumber) {
-    if (confirm(`${phoneNumber} নম্বরে কল করবেন?`)) {
-        window.location.href = `tel:${phoneNumber}`;
-    }
-}
-
-// View pharmacy details
-function viewDetails(pharmacyId) {
-    const pharmacy = pharmaciesData.find(p => p.id === pharmacyId);
-    if (!pharmacy) return;
-
-    const medicines = Object.entries(pharmacy.medicines)
-        .map(([name, details]) => `${name}: ৳${details.price} (স্টক: ${details.stock})`)
-        .join('\n');
-
-    alert(`${pharmacy.name}\n\n${pharmacy.address}\n${pharmacy.phone}\n${pharmacy.openingHours}\n\nসব ওষুধ:\n${medicines}`);
-}
-
-// Get current location
-function getCurrentLocation() {
-    // Wait for MapsManager to be available
-    if (typeof MapsManager === 'undefined') {
-        setTimeout(getCurrentLocation, 500);
-        return;
-    }
-
-    const loading = document.querySelector('.map-placeholder');
-    if (loading) {
-        loading.innerHTML = '<i class="fas fa-spinner fa-spin"></i><br>অবস্থান খুঁজছি...';
-    }
-
-    // Use MapsManager's proper geolocation
-    MapsManager.getCurrentLocation()
-        .then(position => {
-            console.log('[Search] Real location obtained:', position);
-            
-            // Store globally for search filtering
-            window.userLocation = position;
-            userLocation = position;
-            
-            // Update UI
-            const locationEl = document.querySelector('.current-location');
-            if (locationEl) {
-                locationEl.innerHTML = `
-                    <i class="fas fa-location-arrow"></i>
-                    আপনার অবস্থান পাওয়া গেছে
-                `;
-            }
-            
-            // Refresh search results with real location
-            if (typeof displayResults === 'function') {
-                displayResults();
-            }
-        })
-        .catch(error => {
-            console.error('[Search] Location error:', error);
-            alert('অবস্থান খুঁজে পাওয়া যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।');
-            
-            if (loading) {
-                loading.innerHTML = '<i class="fas fa-map"></i><br>Google Maps<br>লোড হচ্ছে...';
-            }
+            displayResults();
         });
+    }
 }
 
-// Initialize Google Maps
 function initializeMap() {
-    // Wait for MapsManager to be available
     if (typeof MapsManager === 'undefined') {
+        console.log('[Search] MapsManager not available, retrying...');
         setTimeout(initializeMap, 500);
         return;
     }
 
-    // Initialize real Google Map
     MapsManager.initializeMap('map')
         .then(map => {
             console.log('[Search] Map initialized successfully');
-            
-            // Add pharmacy markers if results are available
             if (filteredResults && filteredResults.length > 0) {
                 MapsManager.addPharmacyMarkers(filteredResults);
             }
         })
         .catch(error => {
             console.error('[Search] Map initialization failed:', error);
-            showMapFallback();
         });
 }
 
-// Initialize map with user location
-function initializeMapWithLocation(lat, lng) {
-    // Use MapsManager to create real map
-    if (typeof MapsManager !== 'undefined') {
-        MapsManager.initializeMap('map', {
-            center: { lat, lng },
-            zoom: 16
-        }).then(() => {
-            // Add pharmacy markers to map
-            if (filteredResults && filteredResults.length > 0) {
-                MapsManager.addPharmacyMarkers(filteredResults);
-            }
-        }).catch(error => {
-            console.error('[Search] Map initialization failed:', error);
-            showMapFallback();
-        });
-    } else {
-        showMapFallback();
-    }
-}
+// ===========================
+// 7. INITIALIZATION
+// ===========================
 
-function showMapFallback() {
-    const mapPlaceholder = document.querySelector('.map-placeholder');
-    if (mapPlaceholder) {
-        mapPlaceholder.innerHTML = `
-            <div style="width: 100%; height: 100%; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                <i class="fas fa-map" style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem;"></i>
-                <p style="color: #6b7280;">মানচিত্র লোড করা যাচ্ছে না</p>
-            </div>
-        `;
-    }
-}
-// Search functionality for quick search on results page
-function quickSearch() {
-    const query = document.getElementById('quickSearchInput')?.value;
-    if (!query) return;
+function initializeSearchPage() {
+    console.log('[Search] Initializing search page...');
 
-    localStorage.setItem('searchType', 'medicine');
-    localStorage.setItem('searchQuery', query);
-    location.reload();
-}
+    // Validate DOM elements
+    const searchQueryEl = document.getElementById('searchQuery');
+    const resultsListEl = document.getElementById('resultsList');
+    const resultsCountEl = document.getElementById('resultsCount');
 
-// Add pharmacy to favorites (future feature)
-function addToFavorites(pharmacyId) {
-    const favorites = JSON.parse(localStorage.getItem('favoritePharmacies') || '[]');
-    if (!favorites.includes(pharmacyId)) {
-        favorites.push(pharmacyId);
-        localStorage.setItem('favoritePharmacies', JSON.stringify(favorites));
-        alert('ফার্মাসি পছন্দের তালিকায় যোগ করা হয়েছে!');
-    } else {
-        alert('এই ফার্মাসি ইতিমধ্যে পছন্দের তালিকায় আছে।');
-    }
-}
-
-// Report pharmacy (future feature)
-function reportPharmacy(pharmacyId) {
-    const reason = prompt('রিপোর্টের কারণ লিখুন:');
-    if (reason) {
-        alert('আপনার রিপোর্ট পাঠানো হয়েছে। ধন্যবাদ!');
-        // Here you would send the report to your backend
-    }
-}
-
-// Share pharmacy info
-function sharePharmacy(pharmacyId) {
-    const pharmacy = pharmaciesData.find(p => p.id === pharmacyId);
-    if (!pharmacy) return;
-
-    const shareText = `${pharmacy.name}\n${pharmacy.address}\nফোন: ${pharmacy.phone}\nখোলার সময়: ${pharmacy.openingHours}`;
-
-    if (navigator.share) {
-        navigator.share({
-            title: pharmacy.name,
-            text: shareText,
-            url: window.location.href
-        });
-    } else {
-        // Fallback: copy to clipboard
-        navigator.clipboard.writeText(shareText).then(() => {
-            alert('ফার্মাসির তথ্য কপি করা হয়েছে!');
-        });
-    }
-}
-
-// Initialize tooltips and other UI enhancements
-function initializeUIEnhancements() {
-    // Add loading animations
-    const cards = document.querySelectorAll('.pharmacy-card');
-    cards.forEach((card, index) => {
-        setTimeout(() => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'all 0.5s ease';
-
-            setTimeout(() => {
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, 100);
-        }, index * 100);
-    });
-}
-
-// Call UI enhancements after results are displayed
-setTimeout(initializeUIEnhancements, 500);
-
-
-function viewOnMap(pharmacyId) {
-
-    const pharmacy = pharmaciesData.find(p => p.id === pharmacyId);
-    if (!pharmacy) {
-        alert('ফার্মাসি খুঁজে পাওয়া যায়নি');
-        return;
+    if (!searchQueryEl || !resultsListEl || !resultsCountEl) {
+        console.error('[Search] Critical DOM elements missing!');
+        return false;
     }
 
-    // Center the map on the pharmacy's coordinates
-    if (typeof map !== 'undefined' && map) {
-        // Create a new LatLng object for the pharmacy location
-        const pharmacyLocation = new google.maps.LatLng(
-            pharmacy.coordinates.lat, 
-            pharmacy.coordinates.lng
-        );
-        
-        // Center the map on this location
-        map.setCenter(pharmacyLocation);
-        
-        // Optionally zoom in a bit
-        map.setZoom(16);
-        
-        // Find and highlight the marker for this pharmacy
-        if (typeof markers !== 'undefined' && markers) {
-            markers.forEach(marker => {
-                if (marker.pharmacyId === pharmacyId) {
-                    // Make this marker bounce or change color
-                    marker.setAnimation(google.maps.Animation.BOUNCE);
-                    
-                    // Stop animation after 2 seconds
-                    setTimeout(() => {
-                        marker.setAnimation(null);
-                    }, 2000);
-                    
-                    // Open info window if it exists
-                    if (marker.infoWindow) {
-                        marker.infoWindow.open(map, marker);
-                    }
-                }
-            });
-        }
-        
-        // Show success message
-        if (typeof UIUtils !== 'undefined' && UIUtils.showNotification) {
-            UIUtils.showNotification(`${pharmacy.name} ম্যাপে দেখানো হচ্ছে`, 'success');
-        }
-        
-    } else {
-        // Fallback: open in Google Maps if integrated map is not available
-        const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${pharmacy.coordinates.lat},${pharmacy.coordinates.lng}`;
-        window.open(googleMapsUrl, '_blank');
+    // Set default search data if none exists
+    if (!localStorage.getItem('searchType')) {
+        localStorage.setItem('searchType', 'symptom');
+        localStorage.setItem('searchQuery', '["fever"]');
     }
-}
 
-// Increase search radius when no results found
-function increaseSearchRadius() {
-    // Fallback radius options if MAPS_CONFIG is not available
-    const radiusOptions = (typeof MAPS_CONFIG !== 'undefined' && MAPS_CONFIG.RADIUS_OPTIONS) ?
-        MAPS_CONFIG.RADIUS_OPTIONS :
-        [
-            { value: 1000, label: '১ কিমি' },
-            { value: 2000, label: '২ কিমি' },
-            { value: 3000, label: '৩ কিমি' },
-            { value: 5000, label: '৫ কিমি' }
-        ];
+    // Show loading initially
+    resultsListEl.innerHTML = '<div class="loading" style="text-align:center; padding:40px;">ফলাফল লোড হচ্ছে...</div>';
+    searchQueryEl.textContent = 'অনুসন্ধান চলছে...';
+    resultsCountEl.textContent = '0';
 
-    const currentIndex = radiusOptions.findIndex(option => option.value === window.currentRadius);
-    if (currentIndex < radiusOptions.length - 1) {
-        const newRadius = radiusOptions[currentIndex + 1].value;
-        window.currentRadius = newRadius;
-
-        // Update UI
-        const radiusSelect = document.getElementById('radiusFilter');
-        if (radiusSelect) {
-            radiusSelect.value = newRadius;
-        }
-
-        // Update maps manager
-        if (typeof MapsManager !== 'undefined' && MapsManager.setSearchRadius) {
-            MapsManager.setSearchRadius(newRadius);
-        }
-
-        // Refresh results
+    // Load search data and display results
+    loadSearchData();
+    setupFilters();
+    
+    // Initialize map
+    if (isScriptsLoaded) {
+        initializeMap();
         displayResults();
-
-        if (typeof UIUtils !== 'undefined') {
-            UIUtils.showNotification(`খোঁজার পরিসীমা ${newRadius/1000} কিমি করা হয়েছে`, 'info');
-        }
     } else {
-        if (typeof UIUtils !== 'undefined') {
-            UIUtils.showNotification('সর্বোচ্চ খোঁজার পরিসীমায় পৌঁছে গেছেন', 'warning');
-        }
+        // Wait for scripts to load
+        setTimeout(() => {
+            initializeMap();
+            displayResults();
+        }, 1000);
     }
+
+    return true;
 }
 
-// Update map markers when results change
-function updateMapWithResults() {
-    if (typeof MapsManager !== 'undefined' && MapsManager.addPharmacyMarkers && filteredResults) {
-        MapsManager.addPharmacyMarkers(filteredResults);
-    }
-}
-
-// Make functions available globally
+// ===========================
+// 8. GLOBAL EXPORTS
+// ===========================
+// Export functions to global scope immediately
+window.getCurrentLocation = getCurrentLocation;
+window.getDirections = getDirections;
 window.viewOnMap = viewOnMap;
-window.increaseSearchRadius = increaseSearchRadius;
-window.updateMapWithResults = updateMapWithResults;
 
-// Defensive: Only override displayResults if updateMapWithResults is defined
-if (typeof updateMapWithResults === 'function') {
-    const originalDisplayResults = displayResults;
-    displayResults = function() {
-        try {
-            originalDisplayResults();
-        } catch (err) {
-            console.error('[Search] displayResults error:', err);
-        }
-        try {
-            updateMapWithResults();
-        } catch (err) {
-            console.error('[Search] updateMapWithResults error:', err);
-        }
-    };
-}}
+// ===========================
+// 9. DOM READY INITIALIZATION
+// ===========================
 
+// Load dependencies first, then initialize
+loadAllDependencies(() => {
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeSearchPage);
+    } else {
+        initializeSearchPage();
+    }
+});
 
-
-
-
-
-
-
-
+console.log('[Search] search.js loaded and ready');
