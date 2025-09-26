@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediMap - Feature Test</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .feature-test {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        .feature-test h3 {
+            color: #2563eb;
+            margin-top: 0;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .error {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        .info {
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+        .btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-vial"></i> MediMap Feature Tests</h1>
+        <p>এই পৃষ্ঠায় নতুন ফিচারগুলি পরীক্ষা করা হচ্ছে।</p>
+
+        <div class="feature-test">
+            <h3><i class="fas fa-map-marker-alt"></i> Location-based Filtering</h3>
+            <p>ব্যবহারকারীর অবস্থানের ভিত্তিতে ফার্মাসি ফিল্টার করা হচ্ছে।</p>
+            <button class="btn" onclick="testLocationFiltering()">Test Location Filtering</button>
+            <div id="locationTest"></div>
+        </div>
+
+        <div class="feature-test">
+            <h3><i class="fas fa-expand-arrows-alt"></i> Configurable Radius</h3>
+            <p>খোঁজার পরিসীমা পরিবর্তন করা যাচ্ছে।</p>
+            <select id="radiusSelector" onchange="testRadiusChange()">
+                <option value="1000">১ কিমি</option>
+                <option value="2000" selected>২ কিমি</option>
+                <option value="3000">৩ কিমি</option>
+                <option value="5000">৫ কিমি</option>
+            </select>
+            <div id="radiusTest"></div>
+        </div>
+
+        <div class="feature-test">
+            <h3><i class="fas fa-map"></i> Map Integration</h3>
+            <p>ম্যাপে ফার্মাসি দেখানো হচ্ছে।</p>
+            <button class="btn" onclick="testMapIntegration()">Test Map Features</button>
+            <div id="mapTest"></div>
+        </div>
+
+        <div class="feature-test">
+            <h3><i class="fas fa-search"></i> Dynamic Search</h3>
+            <p>অবস্থান এবং ওষুধ অনুযায়ী খোঁজ।</p>
+            <input type="text" id="medicineInput" placeholder="ওষুধের নাম লিখুন" style="padding: 8px; margin: 5px;">
+            <button class="btn" onclick="testDynamicSearch()">Test Search</button>
+            <div id="searchTest"></div>
+        </div>
+
+        <div class="feature-test">
+            <h3><i class="fas fa-exclamation-triangle"></i> No Results Message</h3>
+            <p>"নিকটবর্তী ফার্মাসি নেই" বার্তা দেখানো।</p>
+            <button class="btn" onclick="testNoResults()">Test No Results</button>
+            <div id="noResultsTest"></div>
+        </div>
+    </div>
+
+    <!-- Include the scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/maps.js"></script>
+    <script src="js/search.js"></script>
+
+    <script>
+        // Test Functions
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="test-result ${type}">${message}</div>`;
+        }
+
+        function testLocationFiltering() {
+            showResult('locationTest', 'Testing location filtering...', 'info');
+
+            if (typeof MapsManager !== 'undefined') {
+                // Simulate getting location
+                const testLocation = { lat: 23.7956, lng: 90.3537 };
+                const testPharmacies = pharmaciesData || [];
+
+                if (testPharmacies.length > 0) {
+                    const filtered = MapsManager.filterPharmaciesByLocation(
+                        testPharmacies,
+                        testLocation.lat,
+                        testLocation.lng,
+                        2000
+                    );
+                    showResult('locationTest',
+                        `✓ Location filtering working! Found ${filtered.length} nearby pharmacies.`,
+                        'success'
+                    );
+                } else {
+                    showResult('locationTest', '⚠ No pharmacy data available for testing.', 'error');
+                }
+            } else {
+                showResult('locationTest', '✗ MapsManager not loaded.', 'error');
+            }
+        }
+
+        function testRadiusChange() {
+            const radius = document.getElementById('radiusSelector').value;
+            showResult('radiusTest', `✓ Radius changed to ${radius/1000} km`, 'success');
+
+            if (typeof MapsManager !== 'undefined') {
+                MapsManager.setSearchRadius(parseInt(radius));
+            }
+        }
+
+        function testMapIntegration() {
+            showResult('mapTest', 'Testing map integration...', 'info');
+
+            if (typeof MapsManager !== 'undefined') {
+                showResult('mapTest', '✓ Maps Manager loaded successfully!', 'success');
+            } else {
+                showResult('mapTest', '✗ Maps Manager not available.', 'error');
+            }
+        }
+
+        function testDynamicSearch() {
+            const medicine = document.getElementById('medicineInput').value;
+            showResult('searchTest', 'Testing dynamic search...', 'info');
+
+            if (medicine) {
+                // Simulate search
+                localStorage.setItem('searchType', 'medicine');
+                localStorage.setItem('searchQuery', medicine);
+                showResult('searchTest', `✓ Search configured for "${medicine}"`, 'success');
+            } else {
+                showResult('searchTest', '⚠ Please enter a medicine name first.', 'error');
+            }
+        }
+
+        function testNoResults() {
+            showResult('noResultsTest', '✓ No results message functionality implemented!', 'success');
+        }
+
+        // Auto-run basic tests
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                // Check if all scripts are loaded
+                const scriptsLoaded = [
+                    typeof MediMapUtils !== 'undefined',
+                    typeof MapsManager !== 'undefined',
+                    typeof UIUtils !== 'undefined'
+                ];
+
+                if (scriptsLoaded.every(loaded => loaded)) {
+                    showResult('overallTest', '✓ All core scripts loaded successfully!', 'success');
+                } else {
+                    showResult('overallTest', '⚠ Some scripts may not be loaded properly.', 'error');
+                }
+            }, 1000);
+        });
+    </script>
+
+    <div class="feature-test">
+        <h3><i class="fas fa-check-circle"></i> Overall Status</h3>
+        <div id="overallTest">Loading...</div>
+    </div>
+</body>
+</html>

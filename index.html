@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediMap - ওষুধ খুঁজুন সহজেই</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kalpurush&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Scripts -->
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
+    <script src="js/transliteration.js"></script>
+</head>
+<body>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="logo">
+                    <div class="logo-placeholder"><img src="assets/logo.png" alt=""></div>
+                    <h1>MediMap</h1>
+                </div>
+                <div class="nav-buttons">
+                    <a href="#" class="btn btn-secondary" id="languageToggle" onclick="toggleLanguage()">
+                        <i class="fas fa-globe"></i>
+                        <span id="languageText">English</span>
+                    </a>
+                    <a href="pharmacy-login.html" class="btn btn-primary">
+                        <i class="fas fa-store"></i>
+                        ফার্মাসি লগইন
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h2>আপনার প্রয়োজনীয় ওষুধ খুঁজুন সহজেই</h2>
+            <p>আপনার এলাকার সব ফার্মাসির ওষুধের তথ্য এক জায়গায়</p>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-tabs">
+                <button class="tab-btn active" data-tab="medicine">
+                    <i class="fas fa-pills"></i>
+                    ওষুধের নাম
+                </button>
+                <button class="tab-btn" data-tab="symptom">
+                    <i class="fas fa-stethoscope"></i>
+                    লক্ষণ অনুযায়ী
+                </button>
+            </div>
+
+            <div class="search-form">
+                <!-- Medicine Search -->
+                <div id="medicine-search" class="search-content">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="ওষুধের নাম লিখুন (যেমন: নাপা, হিস্টাসিন, সার্জেল)">
+                    </div>
+                    <button class="search-btn" onclick="searchMedicine()">
+                        <i class="fas fa-search"></i>
+                        খুঁজুন
+                    </button>
+                </div>
+
+                <!-- Symptom Search -->
+                <div id="symptom-search" class="search-content hidden">
+                    <div class="symptom-grid">
+                        <div class="symptom-card" data-symptom="fever">
+                            <div class="symptom-icon" style="background: #fee2e2; color: #dc2626;">
+                                <i class="fas fa-thermometer-half"></i>
+                            </div>
+                            <div>
+                                <h4>জ্বর</h4>
+                                <p>Fever</p>
+                            </div>
+                        </div>
+                        <div class="symptom-card" data-symptom="cold">
+                            <div class="symptom-icon" style="background: #e0f2fe; color: #0288d1;">
+                                <i class="fas fa-wind"></i>
+                            </div>
+                            <div>
+                                <h4>সর্দি</h4>
+                                <p>Cold</p>
+                            </div>
+                        </div>
+                        <div class="symptom-card" data-symptom="headache">
+                            <div class="symptom-icon" style="background: #f3e5f5; color: #8e24aa;">
+                                <i class="fas fa-head-side-virus"></i>
+                            </div>
+                            <div>
+                                <h4>মাথা ব্যথা</h4>
+                                <p>Headache</p>
+                            </div>
+                        </div>
+                        <div class="symptom-card" data-symptom="diarrhea">
+                            <div class="symptom-icon" style="background: #fff3e0; color: #f57c00;">
+                                <i class="fas fa-toilet"></i>
+                            </div>
+                            <div>
+                                <h4>পাতলা পায়খানা</h4>
+                                <p>Diarrhea</p>
+                            </div>
+                        </div>
+                        <div class="symptom-card" data-symptom="body-pain">
+                            <div class="symptom-icon" style="background: #ffebee; color: #c62828;">
+                                <i class="fas fa-user-injured"></i>
+                            </div>
+                            <div>
+                                <h4>হাত/পায়ে ব্যথা</h4>
+                                <p>Body Pain</p>
+                            </div>
+                        </div>
+                        <div class="symptom-card" data-symptom="allergy">
+                            <div class="symptom-icon" style="background: #e8f5e8; color: #388e3c;">
+                                <i class="fas fa-allergies"></i>
+                            </div>
+                            <div>
+                                <h4>এলার্জি</h4>
+                                <p>Allergy</p>
+                            </div>
+                        </div>
+                        <div class="symptom-card" data-symptom="gastric">
+                            <div class="symptom-icon" style="background: #fce4ec; color: #ad1457;">
+                                <i class="fas fa-stomach"></i>
+                            </div>
+                            <div>
+                                <h4>গ্যাস্ট্রিক</h4>
+                                <p>Gastric</p>
+                            </div>
+                        </div>
+                        <div class="symptom-card" data-symptom="asthma">
+                            <div class="symptom-icon" style="background: #e1f5fe; color: #0097a7;">
+                                <i class="fas fa-lungs"></i>
+                            </div>
+                            <div>
+                                <h4>এজমা</h4>
+                                <p>Asthma</p>
+                            </div>
+                        </div>
+                        <div class="symptom-card" data-symptom="toothache">
+                            <div class="symptom-icon" style="background: #fff8e1; color: #ffa000;">
+                                <i class="fas fa-tooth"></i>
+                            </div>
+                            <div>
+                                <h4>দাঁতের ব্যথা</h4>
+                                <p>Toothache</p>
+                            </div>
+                        </div>
+                        <div class="symptom-card" data-symptom="nasal-congestion">
+                            <div class="symptom-icon" style="background: #f1f8e9; color: #689f38;">
+                                <i class="fas fa-head-side-cough"></i>
+                            </div>
+                            <div>
+                                <h4>নাক বন্ধ</h4>
+                                <p>Nasal Congestion</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="search-btn" onclick="searchBySymptom()" style="margin-top: 2rem;">
+                        <i class="fas fa-search"></i>
+                        নির্বাচিত লক্ষণ অনুযায়ী ওষুধ খুঁজুন
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Emergency Section -->
+    <section class="emergency-section">
+        <div class="container">
+            <h3><i class="fas fa-exclamation-triangle"></i> জরুরি সেবা</h3>
+            <p>অক্সিজেন সিলিন্ডার এবং জরুরি ওষুধের জন্য</p>
+            <button class="emergency-btn" onclick="searchEmergency()">
+                <i class="fas fa-ambulance"></i>
+                জরুরি ওষুধ খুঁজুন
+            </button>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">আমাদের সেবা</h2>
+            <p style="text-align: center; font-size: 1.2rem; color: #64748b; margin-bottom: 2rem;">
+                আপনার স্বাস্থ্যসেবা আরও সহজ করতে আমাদের বিশেষ সুবিধা
+            </p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h3>নিকটতম ফার্মাসি</h3>
+                    <p>আপনার অবস্থানের সবচেয়ে কাছের ফার্মাসি খুঁজে পান</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>রিয়েল-টাইম তথ্য</h3>
+                    <p>ওষুধের প্রাপ্যতা এবং দাম সর্বদা আপডেটেড</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h3>সরাসরি যোগাযোগ</h3>
+                    <p>ফার্মাসির সাথে সরাসরি ফোনে কথা বলুন</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <h3>MediMap</h3>
+            <p>স্বাস্থ্যসেবা সহজ করা আমাদের লক্ষ্য</p>
+            <p style="margin-top: 2rem; opacity: 0.7;">
+                &copy; 2024 MediMap. সকল অধিকার সংরক্ষিত।
+            </p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab-btn').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.search-content').forEach(content => content.classList.add('hidden'));
+                
+                // Add active class to clicked tab
+                btn.classList.add('active');
+                
+                // Show corresponding content
+                const tabType = btn.dataset.tab;
+                const content = document.getElementById(tabType + '-search');
+                if (content) {
+                    content.classList.remove('hidden');
+                    
+                    // Show symptom grid for symptom tab
+                    if (tabType === 'symptom') {
+                        content.querySelector('.symptom-grid').style.display = 'grid';
+                    }
+                }
+            });
+        });
+
+        // Symptom card selection
+        let selectedSymptoms = [];
+        
+        document.querySelectorAll('.symptom-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const symptom = card.dataset.symptom;
+                
+                if (card.classList.contains('selected')) {
+                    card.classList.remove('selected');
+                    selectedSymptoms = selectedSymptoms.filter(s => s !== symptom);
+                } else {
+                    card.classList.add('selected');
+                    selectedSymptoms.push(symptom);
+                }
+            });
+        });
+
+        // Search functions
+        function searchMedicine() {
+            const medicineInput = document.querySelector('#medicine-search .search-input');
+            const medicineName = medicineInput.value.trim();
+            
+            if (!medicineName) {
+                alert('অনুগ্রহ করে ওষুধের নাম লিখুন');
+                return;
+            }
+            
+            // Store search data and redirect
+            localStorage.setItem('searchType', 'medicine');
+            localStorage.setItem('searchQuery', medicineName);
+            window.location.href = 'search-results.html';
+        }
+
+        function searchBySymptom() {
+            if (selectedSymptoms.length === 0) {
+                alert('অনুগ্রহ করে কমপক্ষে একটি লক্ষণ নির্বাচন করুন');
+                return;
+            }
+            
+            // Store search data and redirect
+            localStorage.setItem('searchType', 'symptom');
+            localStorage.setItem('searchQuery', JSON.stringify(selectedSymptoms));
+            window.location.href = 'search-results.html';
+        }
+
+        function searchEmergency() {
+            localStorage.setItem('searchType', 'emergency');
+            localStorage.setItem('searchQuery', 'oxygen');
+            window.location.href = 'search-results.html';
+        }
+
+        // Add entrance animations for hero section
+        document.addEventListener('DOMContentLoaded', () => {
+            const hero = document.querySelector('.hero');
+            hero.style.opacity = '0';
+            hero.style.transform = 'translateY(30px)';
+
+            setTimeout(() => {
+                hero.style.transition = 'all 0.8s ease';
+                hero.style.opacity = '1';
+                hero.style.transform = 'translateY(0)';
+            }, 100);
+        });
+
+        // Add smooth scrolling and animations
+    </script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/maps.js"></script>
+    <script src="js/language.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

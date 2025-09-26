@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediMap - খোঁজার ফলাফল</title>
+    <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet"
+    />
+    <link
+            href="https://fonts.googleapis.com/css2?family=Kalpurush&family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/search_results.css"/>
+    <link href="css/style.css" rel="stylesheet"/>
+    <link href="css/responsive.css" rel="stylesheet"/>
+    <script src="js/medicine-names.js"></script>
+    <!-- style tag remains same -->
+    <style>
+      /* General Styles */
+      body {
+        font-family: "Inter", "Kalpurush", Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #f8fafc;
+        margin: 0;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header Styles */
+      .header {
+        background: #f8fafc !important;
+        color: white;
+        padding: 1rem 0 !important;
+        box-shadow: 0 2px 10px rgba(37, 99, 235, 0.2);
+      }
+
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center !important;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: white;
+      }
+
+      .logo img {
+        width: 150px;
+        object-fit: contain;
+        transform: translateY(-8px);
+      }
+
+      .back-btn {
+        background: #4e73ab;
+        color: white;
+        padding: 12px 24px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        transform: translateY(2px);
+      }
+
+      .back-btn:hover {
+        background: #526d96;
+      }
+      /* Search Header */
+      .search-header {
+        background: #f8fafc;
+        padding: 2rem 0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        text-align: left;
+      }
+      .search-hero{
+        display: flex;
+        justify-content: space-between;
+        margin: 0 100px 0 40px ;
+        max-width: 1200px;
+        margin: 0 auto;
+        img{
+          width: 200px;
+
+
+        }
+      }
+
+      .search-info {
+
+        text-align: left;
+        padding-left: 20px;
+      }
+
+      .search-info h2 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: #1e293b;
+      }
+
+      .search-query {
+        background: #1d4ed8;
+        color: #f4f1f1f8;
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: inline-block;
+        font-weight: 600;
+        margin: 0 8px;
+        text-decoration: underline;
+      }
+
+      .results-count {
+        margin-top: 1rem;
+        color: #64748b;
+        font-size: 1.2rem;
+        font-weight: 500;
+      }
+
+      /* Filters */
+      .filters {
+        background: white;
+        /* background: #000; */
+
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .filter-row {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .filter-group label {
+        color: #4a5568;
+        font-weight: 500;
+      }
+
+      .filter-select {
+        width: 150px;
+        padding: 10px 15px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        color: #4a5568;
+      }
+
+      .filter-select:focus {
+        outline: none;
+        border-color: #2563eb;
+      }
+
+      /* Results Container */
+      .results-container {
+        display: flex;
+        width: 100%;
+      }
+
+      .results-list {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 0 10px;
+      }
+
+      .map-sidebar {
+        width: 50%; /* 50% width for the map */
+        height: 100%; /* 100% height for the map */
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        position: relative;
+        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+      }
+
+      .pharmacy-card {
+        font-size: 16px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        line-height: 1.8;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease-in-out;
+      }
+
+      .pharmacy-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .pharmacy-card.highlighted {
+        border-color: #2563eb;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        background: linear-gradient(to right, #f8fafc, #eff6ff);
+      }
+
+      .pharmacy-name {
+        color: #1e293b;
+        padding-bottom: 5px;
+        font-weight: 600;
+      }
+
+      .pharmacy-status {
+        font-size: 14px;
+        text-align: center;
+        margin-top: 5px;
+        transition: 0.3s;
+      }
+
+      .pharmacy-status:hover {
+        transform: translateY(-1px);
+      }
+
+      .medicine-box {
+        margin: 5px 0;
+        background: #f1f5f9;
+        border-radius: 8px;
+        padding: 8px 15px;
+        transition: 0.3s;
+        color: #313c4d;
+      }
+
+      .medicine-box:hover {
+        transform: scale(1.03);
+        box-shadow: 0 2px 6px #cbd5e0;
+      }
+      .pharmacy-actions .btn:first-child{
+        margin: 10px 0;
+        
+      }
+
+      /* Map Sidebar */
+      .map-sidebar{
+        height: 100rem;
+        padding: 0 !important;
+        display: flex;
+        flex-direction: column;
+
+        align-items: center;
+      }
+      .map-sidebar h3 {
+        margin-bottom: 15px;
+        color: #1e293b;
+      }
+
+      .map-sidebar h3 i {
+        color: #2563eb;
+      }
+
+      #map {
+        width: 100%;
+        height: 90%;
+        background: #e2e8f0;
+        border-radius: 10px;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        box-sizing: border-box;
+      }
+
+      #map div {
+        text-align: center;
+      }
+
+      #map div i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+
+      } 
+
+      .location-info {
+        text-align: center;
+        margin-bottom: 20px;
+
+      }
+
+      .current-location {
+        color: #2563eb;
+        font-weight: 600;
+      }
+
+      .btn-primary {
+        
+        width: 90%;
+        
+        padding: 12px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+      }
+
+      .btn-primary:hover {
+        background-color: #1e4dcf;
+        box-shadow: 0 0 0 0 ;
+      }
+
+      .no-results {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+      }
+
+      .no-results-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+      }
+
+      .btn-secondary {
+        background: #64748b;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-secondary:hover {
+        background: #475569;
+      }
+
+      /* Footer */
+      .footer {
+        background: #1e293b;
+        color: white;
+        padding: 3rem 0 2rem;
+        text-align: center;
+      }
+
+      .footer h3 {
+        color: white;
+      }
+
+      /* Loading */
+      .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+      }
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e2e8f0;
+        border-top: 4px solid #2563eb;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .results-container {
+          flex-direction: column;
+        }
+
+        .results-list,
+        .map-sidebar {
+          width: 100%;
+          
+        }
+
+        .map-sidebar {
+          margin-top: 20px;
+        }
+
+        .filter-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .filter-group {
+          justify-content: space-between;
+        }
+        /* Responsive Styles */
+
+/* Smaller than standard 960 (devices less than 960px) */
+@media only screen and (max-width: 959px) {
+  .search-hero {
+    margin: 0 20px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .search-hero img {
+    width: 150px;
+    margin-bottom: 20px;
+  }
+
+  .search-info {
+    text-align: center;
+    padding-left: 0;
+  }
+
+  .filters .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-select {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .results-container {
+    flex-direction: column;
+  }
+
+  .results-list {
+    width: 100%;
+    order: 1;
+  }
+
+  .map-sidebar {
+    width: 100%;
+    order: 2;
+    height: auto;
+  }
+
+  #map {
+    height: 400px;
+  }
+}
+
+/* Mobile Portrait Size to Mobile Landscape Size (devices between 320 and 480 px) */
+@media only screen and (max-width: 480px) {
+  .search-info h2 {
+    font-size: 2rem;
+  }
+
+  .results-count {
+    font-size: 1rem;
+  }
+
+  .pharmacy-card {
+    font-size: 14px;
+  }
+}
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="container">
+        <nav class="nav">
+          <a href="index.html" class="logo">
+            <img src="assets/main-logo.png" alt="main logo" />
+          </a>
+          <a href="index.html" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            ফিরে যান
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Search Header -->
+    <section class="search-header" style="background: #e0eff6;">
+      <div class="container search-hero"  >
+        <div class="search-info">
+          <h2 style="color: #1d4ed8;">খোঁজার ফলাফল</h2>
+          <div>
+            <strong>খোঁজা হয়েছে:</strong>
+            <span class="search-query" id="searchQuery">Walk In Clinics</span>
+            
+          </div>
+          <div class="results-count">
+            <span id="resultsCount">486</span> টি ফার্মাসিতে পাওয়া গেছে
+          </div>
+        </div>
+        <div class="search-header-img">
+          <img src="./assets/search-header.jpg" alt="">
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters">
+      <div class="container">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label><strong>সাজান:</strong></label>
+            <select class="filter-select" id="sortFilter">
+              <option value="bestMatch">Best Match</option>
+              <option value="distance">দূরত্ব অনুযায়ী</option>
+              <option value="price">দাম অনুযায়ী</option>
+              <option value="availability">প্রাপ্যতা অনুযায়ী</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label><strong>অবস্থা:</strong></label>
+            <select class="filter-select" id="statusFilter">
+              <option value="all">সব</option>
+              <option value="open">খোলা</option>
+              <option value="closed">বন্ধ</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label><strong>খোঁজার পরিসীমা:</strong></label>
+            <select class="filter-select" id="radiusFilter">
+              <option value="1000">১ কিমি</option>
+              <option value="2000" selected>২ কিমি</option>
+              <option value="3000">৩ কিমি</option>
+              <option value="5000">৫ কিমি</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section class="container">
+      <div class="results-container" style="margin-bottom: 30px;">
+        <!-- Results List -->
+        <div class="results-list" id="resultsList">
+     
+          <div class="loading">
+            <div class="spinner"></div>
+          </div>
+        </div>
+
+        <!-- Map Sidebar -->
+        <div class="map-sidebar">
+          <!-- <h3>
+            <i class="fas fa-map-marker-alt"></i>
+            ম্যাপে দেখুন
+          </h3> -->
+
+          <!-- Real Map Container -->
+          <div id="map">
+            <div>
+              <i class="fas fa-map"></i>
+              <p>Google Maps লোড হচ্ছে...</p>
+            </div>
+          </div>
+
+          <div class="location-info">
+            <div class="current-location" id="currentLocationDisplay">
+              <i class="fas fa-location-arrow"></i>
+              <span id="locationText">অবস্থান খুঁজছি...</span>
+            </div>
+            <div class="search-radius" id="searchRadiusDisplay" style="font-size: 0.9em; color: #64748b; margin-top: 5px;">
+              <i class="fas fa-search"></i>
+              খোঁজার পরিসীমা: <span id="radiusDisplay">২ কিমি</span>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="MapsManager.getCurrentLocation()">
+            <i class="fas fa-crosshairs"></i>
+            আমার অবস্থান খুঁজুন
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <h3>MediMap</h3>
+        <p>স্বাস্থ্যসেবা সহজ করা আমাদের লক্ষ্য</p>
+        <p style="margin-top: 2rem; opacity: 0.7">
+          &copy; 2025 MediMap. সকল অধিকার সংরক্ষিত।
+        </p>
+      </div>
+    </footer-->
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+
+    <!-- Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/maps.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/language.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
