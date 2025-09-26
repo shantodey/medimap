@@ -5,18 +5,42 @@ let isLoading = false;
 
 // Initialize login page
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing login page');
+
     // Check if already logged in
     checkExistingLogin();
-    
+
     // Setup form handlers
     setupLoginForm();
     setupForgotPasswordForm();
-    
+
     // Setup UI enhancements
     setupUIEnhancements();
-    
+
     // Load remembered username
     loadRememberedUsername();
+
+    // Add debug info
+    console.log('Login page initialization complete');
+
+    // Add global test function for debugging
+    window.testLogin = async function() {
+        console.log('Manual login test started');
+        const result = await loginPharmacy('popular_pharmacy', '123456');
+        console.log('Manual test result:', result);
+        if (result && result.success) {
+            localStorage.setItem('loggedInPharmacy', JSON.stringify(result.pharmacy));
+            window.location.href = 'admin-dashboard.html';
+        }
+    };
+
+    // Add global login click handler
+    window.handleLoginClick = function(event) {
+        console.log('Login button clicked directly');
+        event.preventDefault();
+        event.stopPropagation();
+        handleLogin(event);
+    };
 });
 
 // Check if user is already logged in
@@ -32,140 +56,197 @@ function checkExistingLogin() {
 // Setup login form
 function setupLoginForm() {
     const loginForm = document.getElementById('loginForm');
-    
+    const loginButton = document.querySelector('.btn-login');
+
     if (loginForm) {
+        console.log('Login form found, attaching event listener');
         loginForm.addEventListener('submit', handleLogin);
+
+        // Also add listener to button as fallback
+        if (loginButton) {
+            console.log('Login button found, adding click handler');
+            loginButton.addEventListener('click', function(e) {
+                console.log('Button click detected');
+                if (e.target.type === 'submit') {
+                    // Let form submit handle it
+                    return;
+                }
+                e.preventDefault();
+                handleLogin(e);
+            });
+        }
+    } else {
+        console.error('Login form not found!');
     }
-    
+
     // Real-time validation
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
-    
+
     if (usernameInput) {
+        console.log('Username input found');
         usernameInput.addEventListener('input', validateUsername);
         usernameInput.addEventListener('blur', validateUsername);
+    } else {
+        console.error('Username input not found!');
     }
-    
+
     if (passwordInput) {
+        console.log('Password input found');
         passwordInput.addEventListener('input', validatePassword);
         passwordInput.addEventListener('blur', validatePassword);
+    } else {
+        console.error('Password input not found!');
     }
 }
 
 // Handle login form submission
 async function handleLogin(e) {
     e.preventDefault();
-    
-    if (isLoading) return;
-    
+    console.log('Login form submitted');
+
+    if (isLoading) {
+        console.log('Already loading, ignoring submission');
+        return;
+    }
+
     // Get form data
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
     const rememberMe = document.getElementById('rememberMe').checked;
-    
+
+    console.log('Form data:', { username, password: password ? '***' : 'empty', rememberMe });
+
     // Validate inputs
     if (!validateLoginForm(username, password)) {
+        console.log('Form validation failed');
         return;
     }
-    
+
+    console.log('Form validation passed, starting login process');
+
     // Show loading state
     showLoadingState();
     
     try {
         // Attempt to login
+        console.log('Attempting login for:', username);
         const result = await loginPharmacy(username, password);
-        
-        if (result.success) {
+        console.log('Login result:', result);
+
+        if (result && result.success) {
             // Login successful
+            console.log('Login successful, redirecting...');
+            console.log('Pharmacy data:', result.pharmacy);
+
             showAlert('সফলভাবে লগইন হয়েছে!', 'success');
-            
+
             // Save login state
             localStorage.setItem('loggedInPharmacy', JSON.stringify(result.pharmacy));
-            
+            console.log('Login data saved to localStorage');
+
             // Remember username if requested
             if (rememberMe) {
                 localStorage.setItem('rememberedUsername', username);
             } else {
                 localStorage.removeItem('rememberedUsername');
             }
-            
+
             // Add login activity
-            addLoginActivity(result.pharmacy.id);
-            
-            // Redirect to dashboard after short delay
-            setTimeout(() => {
-                window.location.href = 'admin-dashboard.html';
-            }, 1500);
-            
+            try {
+                addLoginActivity(result.pharmacy.id);
+                console.log('Login activity added');
+            } catch (activityError) {
+                console.error('Error adding activity:', activityError);
+            }
+
+            // Redirect immediately instead of delay
+            console.log('Redirecting to dashboard now...');
+            hideLoadingState();
+            window.location.href = 'admin-dashboard.html';
+
         } else {
             // Login failed
-            showAlert(result.message || 'লগইন ব্যর্থ হয়েছে', 'error');
+            console.log('Login failed:', result);
+            showAlert(result?.message || 'লগইন ব্যর্থ হয়েছে', 'error');
+            hideLoadingState();
         }
-        
+
     } catch (error) {
         console.error('Login error:', error);
         showAlert('একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।', 'error');
-    } finally {
         hideLoadingState();
     }
 }
 
 // Login pharmacy function
 async function loginPharmacy(username, password) {
+    console.log('=== Starting login process for:', username, '===');
+
     try {
-        // Try to get pharmacy data from Firebase
-        if (window.MediMapDB && window.MediMapDB.PharmacyDB) {
-            const pharmacy = await window.MediMapDB.PharmacyDB.getPharmacyByUsername(username);
-            
-            if (!pharmacy) {
-                return {
-                    success: false,
-                    message: 'এই ইউজারনেম দিয়ে কোন ফার্মাসি পাওয়া যায়নি'
-                };
+        // First check if we have Firebase available and can connect
+        if (window.MediMapDB && window.MediMapDB.FirebaseUtils && window.MediMapDB.FirebaseUtils.isFirebaseAvailable()) {
+            console.log('Firebase available, attempting Firebase login...');
+
+            try {
+                // Try Firebase login with timeout
+                console.log('Creating Firebase promise...');
+                const pharmacyPromise = window.MediMapDB.PharmacyDB.getPharmacyByUsername(username);
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Firebase timeout')), 3000)
+                );
+
+                console.log('Waiting for Firebase response...');
+                const pharmacy = await Promise.race([pharmacyPromise, timeoutPromise]);
+                console.log('Firebase response received:', pharmacy);
+
+                if (pharmacy) {
+                    console.log('Found pharmacy in Firebase:', pharmacy.username);
+
+                    // Validate password
+                    if (pharmacy.password === password && pharmacy.isActive !== false) {
+                        console.log('Firebase login successful');
+                        return { success: true, pharmacy: pharmacy };
+                    } else {
+                        console.log('Firebase password/status validation failed');
+                        return {
+                            success: false,
+                            message: pharmacy.password !== password ? 'পাসওয়ার্ড সঠিক নয়' : 'আপনার অ্যাকাউন্ট নিষ্ক্রিয় রয়েছে'
+                        };
+                    }
+                } else {
+                    console.log('No pharmacy found in Firebase');
+                }
+            } catch (firebaseError) {
+                console.log('Firebase error, trying local fallback:', firebaseError.message);
             }
-            
-            // Check password (in real app, use proper hash comparison)
-            if (pharmacy.password !== password) {
-                return {
-                    success: false,
-                    message: 'পাসওয়ার্ড সঠিক নয়'
-                };
-            }
-            
-            // Check if pharmacy is active
-            if (!pharmacy.isActive) {
-                return {
-                    success: false,
-                    message: 'আপনার অ্যাকাউন্ট নিষ্ক্রিয় রয়েছে। সাহায্যের জন্য যোগাযোগ করুন।'
-                };
-            }
-            
-            return {
-                success: true,
-                pharmacy: pharmacy
-            };
-            
         } else {
-            // Fallback: Check local storage for demo
-            return loginPharmacyLocal(username, password);
+            console.log('Firebase not available or not initialized');
         }
-        
+
+        // Fallback to local demo accounts
+        console.log('Using local demo accounts fallback');
+        const localResult = loginPharmacyLocal(username, password);
+        console.log('Local login result:', localResult);
+        return localResult;
+
     } catch (error) {
         console.error('Login error:', error);
-        return {
-            success: false,
-            message: 'লগইন করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।'
-        };
+        // Final fallback to local
+        console.log('Final fallback to local');
+        return loginPharmacyLocal(username, password);
     }
 }
 
 // Fallback local login
 function loginPharmacyLocal(username, password) {
+    console.log('Using local fallback login for:', username);
+
     // Demo accounts for testing
     const demoAccounts = [
         {
             id: 'pharmacy_1',
-            username: 'popular_pharmacy',
+            username: 'demo',
             password: '123456',
             name: 'Popular Pharmacy',
             ownerName: 'মো. করিম উদ্দিন',
@@ -192,34 +273,40 @@ function loginPharmacyLocal(username, password) {
             createdAt: new Date().toISOString()
         }
     ];
-    
+
     // Check stored pharmacies
     const storedPharmacies = JSON.parse(localStorage.getItem('pharmacies') || '[]');
     const allPharmacies = [...demoAccounts, ...storedPharmacies];
-    
+
+    console.log('Available accounts:', allPharmacies.map(p => p.username));
+
     const pharmacy = allPharmacies.find(p => p.username === username);
-    
+
     if (!pharmacy) {
+        console.log('Pharmacy not found for username:', username);
         return {
             success: false,
             message: 'এই ইউজারনেম দিয়ে কোন ফার্মাসি পাওয়া যায়নি'
         };
     }
-    
+
     if (pharmacy.password !== password) {
+        console.log('Password mismatch for:', username);
         return {
             success: false,
             message: 'পাসওয়ার্ড সঠিক নয়'
         };
     }
-    
+
     if (pharmacy.isActive === false) {
+        console.log('Account inactive for:', username);
         return {
             success: false,
             message: 'আপনার অ্যাকাউন্ট নিষ্ক্রিয় রয়েছে'
         };
     }
-    
+
+    console.log('Local login successful for:', username);
     return {
         success: true,
         pharmacy: pharmacy
@@ -282,14 +369,19 @@ function validatePassword() {
 function showFieldError(fieldName, message) {
     const errorElement = document.getElementById(fieldName + 'Error');
     const inputElement = document.getElementById(fieldName);
-    
+
     if (errorElement) {
         errorElement.textContent = message;
-        errorElement.style.display = 'block';
+        errorElement.classList.add('show');
     }
-    
+
     if (inputElement) {
         inputElement.classList.add('error');
+        // Add shake animation
+        inputElement.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => {
+            inputElement.style.animation = '';
+        }, 500);
     }
 }
 
@@ -297,22 +389,27 @@ function showFieldError(fieldName, message) {
 function clearFieldError(fieldName) {
     const errorElement = document.getElementById(fieldName + 'Error');
     const inputElement = document.getElementById(fieldName);
-    
+
     if (errorElement) {
         errorElement.textContent = '';
-        errorElement.style.display = 'none';
+        errorElement.classList.remove('show');
     }
-    
+
     if (inputElement) {
         inputElement.classList.remove('error');
     }
 }
 
-// Toggle password visibility
-function togglePassword() {
+// Toggle password visibility (login specific)
+function toggleLoginPassword() {
     const passwordInput = document.getElementById('password');
     const toggleIcon = document.getElementById('passwordToggleIcon');
-    
+
+    if (!passwordInput || !toggleIcon) {
+        console.error('Password input or toggle icon not found');
+        return;
+    }
+
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         toggleIcon.classList.remove('fa-eye');
@@ -623,6 +720,7 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
 
 // Cleanup function
 window.addEventListener('beforeunload', () => {

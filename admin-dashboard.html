@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediMap - ফার্মাসি অ্যাডমিন প্যানেল</title>
+    <link rel="icon" type="image/x-icon" href="assets/fabdicon.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kalpurush&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
@@ -16,8 +17,7 @@
     <header class="admin-header">
         <div class="admin-header-content">
             <div class="admin-logo">
-                <div class="logo-placeholder">LOGO</div>
-                <h1>MediMap</h1>
+                <a href="index.html"><img src="assets/main-logo.png" alt="logo"></a>
                 <span class="admin-badge">অ্যাডমিন</span>
             </div>
             <div class="admin-user-info">
@@ -34,7 +34,7 @@
                 <div class="header-actions">
                     <button class="btn-icon" onclick="toggleLanguage()">
                         <i class="fas fa-globe"></i>
-                        <span id="languageText">English</span>
+                        <span id="languageText">EN</span>
                     </button>
                     <button class="btn-icon" onclick="toggleNotifications()">
                         <i class="fas fa-bell"></i>
@@ -488,6 +488,12 @@
             </div>
         </div>
     </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
 
     <!-- Scripts -->
     <script src="js/firebase-config.js"></script>

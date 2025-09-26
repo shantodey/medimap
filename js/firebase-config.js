@@ -1,33 +1,66 @@
 // MediMap Firebase Configuration
 
-// Firebase configuration object
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "AIzaSyDemoKey123456789", // Replace with your actual API key
-    authDomain: "medimap-bd.firebaseapp.com", // Replace with your project domain
-    databaseURL: "https://medimap-bd-default-rtdb.firebaseio.com", // Replace with your database URL
-    projectId: "medimap-bd", // Replace with your project ID
-    storageBucket: "medimap-bd.appspot.com", // Replace with your storage bucket
-    messagingSenderId: "123456789012", // Replace with your sender ID
-    appId: "1:123456789012:web:abcdef123456789" // Replace with your app ID
+  apiKey: "AIzaSyDjMIwTC6TL6cH95BaNkXK8GMKBwObItKY",
+  authDomain: "medimap-c2142.firebaseapp.com",
+  projectId: "medimap-c2142",
+  storageBucket: "medimap-c2142.firebasestorage.app",
+  messagingSenderId: "245404828431",
+  appId: "1:245404828431:web:21fdceb29ca20de9bff47a",
+  measurementId: "G-Z9WGJ8L593"
 };
+
+// Initialize Firebase
 
 // Initialize Firebase
 let app, db, auth, storage;
 
+
+// Check if Firebase config has real values (not placeholders)
+const isConfigValid = firebaseConfig.apiKey !== "your-api-key-here" &&
+                     firebaseConfig.projectId !== "your-project-id";
+
 try {
-    // Initialize Firebase App
-    app = firebase.initializeApp(firebaseConfig);
-    
-    // Initialize Firestore Database
-    db = firebase.firestore();
-    
-    // Initialize Firebase Authentication
-    auth = firebase.auth();
-    
-    // Initialize Firebase Storage
-    storage = firebase.storage();
-    
-    console.log('Firebase initialized successfully');
+    // Check if Firebase SDK is loaded
+    if (typeof firebase === 'undefined') {
+        throw new Error('Firebase SDK not loaded');
+    }
+
+    if (isConfigValid) {
+        // Initialize Firebase App
+        app = firebase.initializeApp(firebaseConfig);
+
+        // Initialize Firestore Database with offline support
+        db = firebase.firestore();
+
+        // Enable offline persistence (optional)
+        try {
+            db.enablePersistence({ synchronizeTabs: true })
+                .then(() => console.log('Firestore offline persistence enabled'))
+                .catch((err) => {
+                    console.log('Firestore offline persistence failed:', err.message);
+                    if (err.code === 'failed-precondition') {
+                        console.log('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+                    } else if (err.code === 'unimplemented') {
+                        console.log('The current browser does not support all of the features required to enable persistence');
+                    }
+                });
+        } catch (persistenceError) {
+            console.log('Persistence setup failed:', persistenceError.message);
+        }
+
+        // Initialize Firebase Authentication
+        auth = firebase.auth();
+
+        // Initialize Firebase Storage
+        storage = firebase.storage();
+
+        console.log('Firebase initialized successfully');
+    } else {
+        console.warn('Firebase not configured - using localStorage fallback');
+        console.warn('Please update firebase-config.js with your actual Firebase project credentials');
+    }
 } catch (error) {
     console.error('Firebase initialization error:', error);
     // Fallback to localStorage if Firebase fails
@@ -590,7 +623,28 @@ class OrderDB {
 const FirebaseUtils = {
     // Check if Firebase is available
     isFirebaseAvailable() {
-        return !!(app && db && auth);
+        try {
+            return !!(app && db && auth && typeof firebase !== 'undefined');
+        } catch (error) {
+            console.log('Firebase availability check failed:', error.message);
+            return false;
+        }
+    },
+
+    // Check if Firebase is connected (can reach the server)
+    async isFirebaseConnected() {
+        if (!this.isFirebaseAvailable()) {
+            return false;
+        }
+
+        try {
+            // Try a simple operation to test connection
+            await db.collection('test').limit(1).get();
+            return true;
+        } catch (error) {
+            console.log('Firebase connection test failed:', error.message);
+            return false;
+        }
     },
     
     // Get current timestamp
@@ -623,13 +677,85 @@ const FirebaseUtils = {
                 },
                 // Add more sample medicines...
             ];
-            
+
             // Save to localStorage as fallback
             localStorage.setItem('allMedicines', JSON.stringify(sampleMedicines));
-            
+
             console.log('Sample data initialized');
         } catch (error) {
             console.error('Error initializing sample data:', error);
+        }
+    },
+
+    // Initialize demo pharmacy accounts in Firebase
+    async initDemoPharmacies() {
+        if (!this.isFirebaseAvailable()) {
+            console.log('Firebase not available, skipping demo pharmacy initialization');
+            return;
+        }
+
+        try {
+            // Demo pharmacy accounts
+            const demoPharmacies = [
+                {
+                    username: 'popular_pharmacy',
+                    password: '123456', // In production, this should be hashed
+                    name: 'Popular Pharmacy',
+                    ownerName: 'মো. করিম উদ্দিন',
+                    address: 'শপিং সেন্টার, মিরপুর-১, ঢাকা',
+                    phone: '01711-123456',
+                    email: 'popular@pharmacy.com',
+                    coordinates: {
+                        lat: 23.7956,
+                        lng: 90.3537
+                    },
+                    openingHours: 'সকাল ৮টা - রাত ১০টা',
+                    isActive: true,
+                    licenseNumber: 'PHARM-001',
+                    services: ['prescription', 'otc', 'emergency'],
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                },
+                {
+                    username: 'square_pharmacy',
+                    password: '123456',
+                    name: 'Square Pharmacy',
+                    ownerName: 'ডা. রহিম আলী',
+                    address: 'কাজীপাড়া মোড়, মিরপুর-১, ঢাকা',
+                    phone: '01811-234567',
+                    email: 'square@pharmacy.com',
+                    coordinates: {
+                        lat: 23.7966,
+                        lng: 90.3547
+                    },
+                    openingHours: '২৪ ঘন্টা খোলা',
+                    isActive: true,
+                    licenseNumber: 'PHARM-002',
+                    services: ['prescription', 'otc', 'emergency', '24hours'],
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }
+            ];
+
+            // Check if demo pharmacies already exist
+            for (const demoPharmacy of demoPharmacies) {
+                const existingPharmacy = await db.collection(Collections.PHARMACIES)
+                    .where('username', '==', demoPharmacy.username)
+                    .limit(1)
+                    .get();
+
+                if (existingPharmacy.empty) {
+                    // Pharmacy doesn't exist, create it
+                    await db.collection(Collections.PHARMACIES).add(demoPharmacy);
+                    console.log(`Demo pharmacy created: ${demoPharmacy.username}`);
+                } else {
+                    console.log(`Demo pharmacy already exists: ${demoPharmacy.username}`);
+                }
+            }
+
+            console.log('Demo pharmacies initialization completed');
+        } catch (error) {
+            console.error('Error initializing demo pharmacies:', error);
         }
     },
     
@@ -654,6 +780,10 @@ const FirebaseUtils = {
 // Initialize sample data on load
 document.addEventListener('DOMContentLoaded', () => {
     FirebaseUtils.initSampleData();
+    // Initialize demo pharmacies in Firebase (only if Firebase is available)
+    if (FirebaseUtils.isFirebaseAvailable()) {
+        FirebaseUtils.initDemoPharmacies();
+    }
 });
 
 // Export for use in other files

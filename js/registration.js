@@ -10,9 +10,11 @@ let userLocation = null;
 
 // Initialize registration page
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM Content Loaded - Starting registration setup');
+
     // Check if already logged in
     checkExistingLogin();
-    
+
     // Setup multi-step form
     setupMultiStepForm();
     
@@ -37,7 +39,6 @@ function checkExistingLogin() {
     const loggedInPharmacy = localStorage.getItem('loggedInPharmacy');
     
     if (loggedInPharmacy) {
-        // User is already logged in, redirect to dashboard
         if (confirm('আপনি ইতিমধ্যে লগইন আছেন। ড্যাশবোর্ডে যেতে চান?')) {
             window.location.href = 'admin-dashboard.html';
         }
@@ -49,16 +50,19 @@ function setupMultiStepForm() {
     updateStepIndicator();
     showStep(currentStep);
     
-    // Setup navigation buttons
-    const nextButtons = document.querySelectorAll('.btn-next');
-    const prevButtons = document.querySelectorAll('.btn-prev');
-    
-    nextButtons.forEach(btn => {
-        btn.addEventListener('click', handleNextStep);
-    });
-    
-    prevButtons.forEach(btn => {
-        btn.addEventListener('click', handlePrevStep);
+    // Improved event delegation for navigation buttons
+    document.addEventListener('click', function(e) {
+        // Handle next button clicks
+        if (e.target.classList.contains('btn-next') || e.target.closest('.btn-next')) {
+            e.preventDefault();
+            handleNextStep(e);
+        }
+        
+        // Handle previous button clicks
+        if (e.target.classList.contains('btn-prev') || e.target.closest('.btn-prev')) {
+            e.preventDefault();
+            handlePrevStep(e);
+        }
     });
     
     // Setup form submission
@@ -68,32 +72,47 @@ function setupMultiStepForm() {
     }
 }
 
-// Handle next step
+// Handle next step - SIMPLIFIED VERSION
 async function handleNextStep(e) {
-    e.preventDefault();
+    console.log('=== NEXT BUTTON CLICKED ===');
+    console.log('Current step:', currentStep);
     
-    if (isSubmitting) return;
-    
+    if (isSubmitting) {
+        console.log('Already submitting, returning');
+        return;
+    }
+
     // Validate current step
     const isValid = await validateCurrentStep();
-    
+    console.log('Validation result:', isValid);
+
     if (isValid) {
         // Save current step data
         saveStepData();
-        
+
         // Move to next step
         if (currentStep < totalSteps) {
             currentStep++;
+            console.log('Moving to step:', currentStep);
             showStep(currentStep);
             updateStepIndicator();
             scrollToTop();
+        } else {
+            console.log('Already at last step');
+        }
+    } else {
+        console.log('Validation failed for step:', currentStep);
+        // Show first error message prominently
+        const firstError = document.querySelector('.form-error:not([style*="display: none"])');
+        if (firstError) {
+            showAlert(firstError.textContent, 'error');
         }
     }
 }
 
 // Handle previous step
 function handlePrevStep(e) {
-    e.preventDefault();
+    console.log('Previous button clicked');
     
     if (currentStep > 1) {
         currentStep--;
@@ -105,15 +124,17 @@ function handlePrevStep(e) {
 
 // Show specific step
 function showStep(step) {
+    console.log('Showing step:', step);
+    
     // Hide all steps
     const steps = document.querySelectorAll('.form-step');
     steps.forEach((stepEl, index) => {
         if (index + 1 === step) {
-            stepEl.classList.add('active');
             stepEl.style.display = 'block';
+            stepEl.classList.add('active');
         } else {
-            stepEl.classList.remove('active');
             stepEl.style.display = 'none';
+            stepEl.classList.remove('active');
         }
     });
     
@@ -160,202 +181,203 @@ function updateStepIndicator() {
     }
 }
 
-// Validate current step
+// Validate current step - SIMPLIFIED
 async function validateCurrentStep() {
+    console.log('Validating step:', currentStep);
+    
+    let isValid = false;
+    
     switch (currentStep) {
         case 1:
-            return validateStep1();
+            isValid = validateStep1();
+            break;
         case 2:
-            return validateStep2();
+            isValid = await validateStep2();
+            break;
         case 3:
-            return validateStep3();
+            isValid = validateStep3();
+            break;
         case 4:
-            return validateStep4();
+            isValid = validateStep4();
+            break;
         default:
-            return true;
+            isValid = true;
     }
+    
+    console.log('Step validation result:', isValid);
+    return isValid;
 }
 
-// Validate Step 1: Pharmacy Information
+// Validate Step 1: Pharmacy Information - SIMPLIFIED
 function validateStep1() {
-    let isValid = true;
+    console.log('Validating step 1');
     
     // Clear previous errors
     clearStepErrors();
     
-    // Required fields
+    // Required fields with simple validation
     const requiredFields = [
-        'pharmacyName',
-        'pharmacyAddress',
-        'pharmacyPhone',
-        'openTime',
-        'closeTime'
+        { id: 'pharmacyName', name: 'ফার্মাসির নাম' },
+        { id: 'pharmacyAddress', name: 'ঠিকানা' },
+        { id: 'pharmacyPhone', name: 'ফোন নম্বর' }
     ];
     
-    requiredFields.forEach(fieldName => {
-        const field = document.getElementById(fieldName);
-        if (!field || !field.value.trim()) {
-            showFieldError(fieldName, 'এই ক্ষেত্রটি পূরণ করুন');
+    let isValid = true;
+    
+    // Check required fields
+    requiredFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (!input || !input.value.trim()) {
+            showFieldError(field.id, `${field.name} প্রয়োজন`);
             isValid = false;
+            return;
         }
     });
     
-    // Validate phone number
+    if (!isValid) return false;
+    
+    // Validate phone number format
     const phone = document.getElementById('pharmacyPhone').value.trim();
     const phoneRegex = /^01[3-9]\d{8}$/;
-    
-    if (phone && !phoneRegex.test(phone)) {
+    if (!phoneRegex.test(phone)) {
         showFieldError('pharmacyPhone', 'সঠিক ফোন নম্বর দিন (যেমন: 01712345678)');
         isValid = false;
     }
     
-    // Validate email if provided
-    const email = document.getElementById('pharmacyEmail').value.trim();
-    if (email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            showFieldError('pharmacyEmail', 'সঠিক ইমেইল ঠিকানা দিন');
+    // Validate time if not 24 hours
+    const is24Hours = document.getElementById('is24Hours').checked;
+    if (!is24Hours) {
+        const openTime = document.getElementById('openTime').value;
+        const closeTime = document.getElementById('closeTime').value;
+        
+        if (!openTime || !closeTime) {
+            showFieldError('openTime', 'খোলা এবং বন্ধের সময় প্রয়োজন');
+            isValid = false;
+        } else if (openTime >= closeTime) {
+            showFieldError('closeTime', 'বন্ধের সময় খোলার সময়ের পরে হতে হবে');
             isValid = false;
         }
     }
     
-    // Validate time
-    const openTime = document.getElementById('openTime').value;
-    const closeTime = document.getElementById('closeTime').value;
-    
-    if (openTime && closeTime && openTime >= closeTime) {
-        showFieldError('closeTime', 'বন্ধের সময় খোলার সময়ের পরে হতে হবে');
-        isValid = false;
-    }
-    
+    console.log('Step 1 validation result:', isValid);
     return isValid;
 }
 
-// Validate Step 2: Owner Information
-function validateStep2() {
-    let isValid = true;
+// Validate Step 2: Owner Information - SIMPLIFIED
+async function validateStep2() {
+    console.log('Validating step 2');
     
     clearStepErrors();
     
     // Required fields
     const requiredFields = [
-        'ownerName',
-        'ownerPhone',
-        'ownerNID',
-        'username',
-        'password',
-        'confirmPassword'
+        { id: 'ownerName', name: 'মালিকের নাম' },
+        { id: 'ownerPhone', name: 'মালিকের ফোন' },
+        { id: 'ownerNID', name: 'এনআইডি নম্বর' },
+        { id: 'username', name: 'ইউজারনেম' },
+        { id: 'password', name: 'পাসওয়ার্ড' },
+        { id: 'confirmPassword', name: 'পাসওয়ার্ড নিশ্চিতকরণ' }
     ];
     
-    requiredFields.forEach(fieldName => {
-        const field = document.getElementById(fieldName);
-        if (!field || !field.value.trim()) {
-            showFieldError(fieldName, 'এই ক্ষেত্রটি পূরণ করুন');
+    let isValid = true;
+    
+    // Check required fields
+    requiredFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (!input || !input.value.trim()) {
+            showFieldError(field.id, `${field.name} প্রয়োজন`);
             isValid = false;
         }
     });
     
-    // Validate owner phone
+    if (!isValid) return false;
+    
+    // Validate phone number
     const ownerPhone = document.getElementById('ownerPhone').value.trim();
     const phoneRegex = /^01[3-9]\d{8}$/;
-    
-    if (ownerPhone && !phoneRegex.test(ownerPhone)) {
+    if (!phoneRegex.test(ownerPhone)) {
         showFieldError('ownerPhone', 'সঠিক ফোন নম্বর দিন');
         isValid = false;
     }
     
     // Validate NID
     const nid = document.getElementById('ownerNID').value.trim();
-    if (nid && (nid.length < 10 || nid.length > 17)) {
-        showFieldError('ownerNID', 'সঠিক জাতীয় পরিচয়পত্র নম্বর দিন');
+    if (nid.length < 10 || nid.length > 17) {
+        showFieldError('ownerNID', 'সঠিক জাতীয় পরিচয়পত্র নম্বর দিন (১০-১৭ ডিজিট)');
         isValid = false;
     }
     
     // Validate username
     const username = document.getElementById('username').value.trim();
-    if (username) {
-        if (username.length < 3) {
-            showFieldError('username', 'ইউজারনেম কমপক্ষে ৩ অক্ষরের হতে হবে');
-            isValid = false;
-        } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-            showFieldError('username', 'ইউজারনেমে শুধু ইংরেজি অক্ষর, সংখ্যা এবং আন্ডারস্কোর ব্যবহার করুন');
-            isValid = false;
-        }
+    if (username.length < 3) {
+        showFieldError('username', 'ইউজারনেম কমপক্ষে ৩ অক্ষরের হতে হবে');
+        isValid = false;
+    } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        showFieldError('username', 'ইউজারনেমে শুধু ইংরেজি অক্ষর, সংখ্যা এবং আন্ডারস্কোর ব্যবহার করুন');
+        isValid = false;
     }
     
     // Validate password
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
     
-    if (password) {
-        if (password.length < 6) {
-            showFieldError('password', 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে');
-            isValid = false;
-        }
-        
-        if (password !== confirmPassword) {
-            showFieldError('confirmPassword', 'পাসওয়ার্ড মিলছে না');
+    if (password.length < 6) {
+        showFieldError('password', 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে');
+        isValid = false;
+    }
+    
+    if (password !== confirmPassword) {
+        showFieldError('confirmPassword', 'পাসওয়ার্ড মিলছে না');
+        isValid = false;
+    }
+    
+    // If basic validation passed, check username availability
+    if (isValid && username) {
+        const usernameAvailable = await checkUsernameAvailability(username);
+        if (!usernameAvailable) {
             isValid = false;
         }
     }
     
-    // Check username availability
-    if (username && isValid) {
-        return checkUsernameAvailability(username);
-    }
-    
+    console.log('Step 2 validation result:', isValid);
     return isValid;
 }
 
 // Check username availability
 async function checkUsernameAvailability(username) {
-    try {
-        // Show checking indicator
-        const usernameField = document.getElementById('username');
-        const originalPlaceholder = usernameField.placeholder;
-        usernameField.placeholder = 'চেক করা হচ্ছে...';
+    return new Promise((resolve) => {
+        console.log('Checking username availability:', username);
         
-        // Check with Firebase/localStorage
-        let existingPharmacy = null;
-        
-        if (window.MediMapDB && window.MediMapDB.PharmacyDB) {
-            existingPharmacy = await window.MediMapDB.PharmacyDB.getPharmacyByUsername(username);
-        } else {
-            // Check locally
+        // Simulate API call with timeout
+        setTimeout(() => {
+            // Simple local check - in real app, this would be an API call
             const storedPharmacies = JSON.parse(localStorage.getItem('pharmacies') || '[]');
-            existingPharmacy = storedPharmacies.find(p => p.username === username);
-        }
-        
-        // Restore placeholder
-        usernameField.placeholder = originalPlaceholder;
-        
-        if (existingPharmacy) {
-            showFieldError('username', 'এই ইউজারনেম ইতিমধ্যে ব্যবহৃত হয়েছে');
-            return false;
-        }
-        
-        // Show availability
-        clearFieldError('username');
-        showFieldSuccess('username', 'ইউজারনেম উপলব্ধ');
-        
-        return true;
-        
-    } catch (error) {
-        console.error('Error checking username:', error);
-        showFieldError('username', 'ইউজারনেম চেক করতে সমস্যা হয়েছে');
-        return false;
-    }
+            const existingPharmacy = storedPharmacies.find(p => p.username === username);
+            
+            if (existingPharmacy) {
+                showFieldError('username', 'এই ইউজারনেম ইতিমধ্যে ব্যবহৃত হয়েছে');
+                resolve(false);
+            } else {
+                clearFieldError('username');
+                showFieldSuccess('username', 'ইউজারনেম উপলব্ধ');
+                resolve(true);
+            }
+        }, 500);
+    });
 }
 
 // Validate Step 3: Medicine Selection
 function validateStep3() {
+    console.log('Validating step 3 - Selected medicines:', selectedMedicines.length);
+    
     if (selectedMedicines.length === 0) {
         showAlert('কমপক্ষে একটি ওষুধ নির্বাচন করুন', 'error');
         return false;
     }
     
     if (selectedMedicines.length < 5) {
-        return confirm('আপনি ৫টির কম ওষুধ নির্বাচন করেছেন। এটি কাস্টমারদের জন্য সীমিত বিকল্প হতে পারে। এগিয়ে যেতে চান?');
+        const proceed = confirm('আপনি ৫টির কম ওষুধ নির্বাচন করেছেন। এটি কাস্টমারদের জন্য সীমিত বিকল্প হতে পারে। এগিয়ে যেতে চান?');
+        return proceed;
     }
     
     return true;
@@ -375,6 +397,8 @@ function validateStep4() {
 
 // Save current step data
 function saveStepData() {
+    console.log('Saving step data for step:', currentStep);
+    
     switch (currentStep) {
         case 1:
             saveStep1Data();
@@ -423,18 +447,6 @@ function saveStep2Data() {
         username: document.getElementById('username').value.trim(),
         password: document.getElementById('password').value
     };
-    
-    // Handle file uploads
-    const ownerPhotoFile = document.getElementById('ownerPhoto').files[0];
-    const pharmacyLicenseFile = document.getElementById('pharmacyLicense').files[0];
-    
-    if (ownerPhotoFile) {
-        formData.ownerPhotoFile = ownerPhotoFile;
-    }
-    
-    if (pharmacyLicenseFile) {
-        formData.pharmacyLicenseFile = pharmacyLicenseFile;
-    }
 }
 
 // Save Step 3 data
@@ -444,6 +456,8 @@ function saveStep3Data() {
 
 // Load step data
 function loadStepData(step) {
+    console.log('Loading data for step:', step);
+    
     switch (step) {
         case 1:
             loadStep1Data();
@@ -491,7 +505,6 @@ function loadStep2Data() {
 
 // Load Step 3 data
 function loadStep3Data() {
-    // Update selected medicines UI
     updateMedicineSelection();
 }
 
@@ -541,157 +554,6 @@ function loadStep4Data() {
             </div>
         </div>
     `;
-}
-
-// Handle final registration
-async function handleRegistration(e) {
-    e.preventDefault();
-    
-    if (isSubmitting) return;
-    
-    // Final validation
-    if (!validateStep4()) {
-        return;
-    }
-    
-    // Show loading
-    showSubmittingState();
-    
-    try {
-        // Prepare registration data
-        const registrationData = await prepareRegistrationData();
-        
-        // Submit to Firebase/localStorage
-        const result = await submitRegistration(registrationData);
-        
-        if (result.success) {
-            showSuccessMessage();
-            
-            // Auto-login after registration
-            setTimeout(async () => {
-                await autoLogin(formData.username, formData.password);
-            }, 3000);
-            
-        } else {
-            showAlert(result.message || 'নিবন্ধন ব্যর্থ হয়েছে', 'error');
-        }
-        
-    } catch (error) {
-        console.error('Registration error:', error);
-        showAlert('নিবন্ধনে সমস্যা হয়েছে। আবার চেষ্টা করুন।', 'error');
-    } finally {
-        hideSubmittingState();
-    }
-}
-
-// Prepare registration data
-async function prepareRegistrationData() {
-    const data = {
-        ...formData,
-        medicines: selectedMedicines,
-        coordinates: userLocation || getDefaultLocation(),
-        registeredAt: new Date().toISOString(),
-        isActive: true,
-        isVerified: false
-    };
-    
-    // Handle file uploads
-    if (formData.ownerPhotoFile) {
-        data.ownerPhoto = await convertFileToBase64(formData.ownerPhotoFile);
-    }
-    
-    if (formData.pharmacyLicenseFile) {
-        data.pharmacyLicense = await convertFileToBase64(formData.pharmacyLicenseFile);
-    }
-    
-    // Remove password from data (will be stored separately)
-    const { password, ...publicData } = data;
-    
-    return {
-        publicData,
-        credentials: {
-            username: formData.username,
-            password: formData.password
-        }
-    };
-}
-
-// Submit registration
-async function submitRegistration(data) {
-    try {
-        if (window.MediMapDB && window.MediMapDB.PharmacyDB) {
-            // Submit to Firebase
-            return await window.MediMapDB.PharmacyDB.createPharmacy(data.publicData);
-        } else {
-            // Submit to localStorage
-            return submitRegistrationLocal(data);
-        }
-    } catch (error) {
-        console.error('Submit registration error:', error);
-        return { success: false, message: 'নিবন্ধনে সমস্যা হয়েছে' };
-    }
-}
-
-// Submit to localStorage (fallback)
-function submitRegistrationLocal(data) {
-    try {
-        const pharmacies = JSON.parse(localStorage.getItem('pharmacies') || '[]');
-        
-        const newPharmacy = {
-            id: 'pharmacy_' + Date.now(),
-            ...data.publicData,
-            username: data.credentials.username,
-            password: data.credentials.password
-        };
-        
-        pharmacies.push(newPharmacy);
-        localStorage.setItem('pharmacies', JSON.stringify(pharmacies));
-        
-        return { success: true, id: newPharmacy.id };
-    } catch (error) {
-        console.error('Local registration error:', error);
-        return { success: false, message: 'স্থানীয় সংরক্ষণে সমস্যা' };
-    }
-}
-
-// Convert file to base64
-function convertFileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
-
-// Auto-login after registration
-async function autoLogin(username, password) {
-    try {
-        // Simulate login process
-        if (window.MediMapDB && window.MediMapDB.PharmacyDB) {
-            const pharmacy = await window.MediMapDB.PharmacyDB.getPharmacyByUsername(username);
-            
-            if (pharmacy) {
-                localStorage.setItem('loggedInPharmacy', JSON.stringify(pharmacy));
-                window.location.href = 'admin-dashboard.html';
-            }
-        } else {
-            // Local login
-            const pharmacies = JSON.parse(localStorage.getItem('pharmacies') || '[]');
-            const pharmacy = pharmacies.find(p => p.username === username);
-            
-            if (pharmacy) {
-                localStorage.setItem('loggedInPharmacy', JSON.stringify(pharmacy));
-                window.location.href = 'admin-dashboard.html';
-            }
-        }
-    } catch (error) {
-        console.error('Auto-login error:', error);
-        // Redirect to login page
-        setTimeout(() => {
-            window.location.href = 'pharmacy-login.html';
-        }, 2000);
-    }
 }
 
 // Setup medicine selection
@@ -762,7 +624,9 @@ function toggleMedicineSelection(e) {
     
     if (checkbox.checked) {
         card.classList.add('selected');
-        selectedMedicines.push(medicineData);
+        if (!selectedMedicines.some(m => m.name === medicineData.name)) {
+            selectedMedicines.push(medicineData);
+        }
     } else {
         card.classList.remove('selected');
         selectedMedicines = selectedMedicines.filter(m => m.name !== medicineData.name);
@@ -857,14 +721,6 @@ function handleFilePreview(event, previewElement) {
         return;
     }
     
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
-    if (!allowedTypes.includes(file.type)) {
-        alert('শুধুমাত্র JPG, PNG, GIF বা PDF ফাইল আপলোড করুন');
-        event.target.value = '';
-        return;
-    }
-    
     // Show preview for images
     if (file.type.startsWith('image/') && previewElement) {
         const reader = new FileReader();
@@ -893,31 +749,6 @@ function setupLocationServices() {
     
     if (getLocationBtn) {
         getLocationBtn.addEventListener('click', getCurrentLocation);
-    }
-    
-    // Try to get location automatically
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                userLocation = {
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude
-                };
-                
-                // Update UI
-                const locationStatus = document.getElementById('locationStatus');
-                if (locationStatus) {
-                    locationStatus.innerHTML = `
-                        <i class="fas fa-check-circle" style="color: green;"></i>
-                        অবস্থান পাওয়া গেছে
-                    `;
-                }
-            },
-            (error) => {
-                console.log('Location not available:', error);
-            },
-            { timeout: 10000 }
-        );
     }
 }
 
@@ -948,7 +779,7 @@ function getCurrentLocation() {
             if (locationStatus) {
                 locationStatus.innerHTML = `
                     <i class="fas fa-check-circle" style="color: green;"></i>
-                    অবস্থান পাওয়া গেছে (${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)})
+                    অবস্থান পাওয়া গেছে
                 `;
             }
             
@@ -956,7 +787,6 @@ function getCurrentLocation() {
             if (locationBtn) {
                 locationBtn.disabled = false;
                 locationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> অবস্থান পাওয়া গেছে';
-                locationBtn.classList.add('success');
             }
         },
         (error) => {
@@ -967,17 +797,8 @@ function getCurrentLocation() {
                 locationBtn.disabled = false;
                 locationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> আবার চেষ্টা করুন';
             }
-        },
-        { timeout: 15000, enableHighAccuracy: true }
+        }
     );
-}
-
-// Get default location (Mirpur-1)
-function getDefaultLocation() {
-    return {
-        latitude: 23.7956,
-        longitude: 90.3537
-    };
 }
 
 // Setup form validation
@@ -999,12 +820,6 @@ function setupFormValidation() {
     if (confirmPasswordInput) {
         confirmPasswordInput.addEventListener('input', validatePasswordMatch);
     }
-    
-    // Phone number formatting
-    const phoneInputs = document.querySelectorAll('input[type="tel"]');
-    phoneInputs.forEach(input => {
-        input.addEventListener('input', formatPhoneNumber);
-    });
 }
 
 // Real-time username validation
@@ -1015,7 +830,6 @@ async function validateUsernameRealTime() {
         return;
     }
     
-    // Check availability
     await checkUsernameAvailability(username);
 }
 
@@ -1073,24 +887,6 @@ function validatePasswordMatch() {
     }
 }
 
-// Format phone number
-function formatPhoneNumber(e) {
-    let value = e.target.value.replace(/\D/g, '');
-    
-    // Bangladesh phone number format
-    if (value.startsWith('880')) {
-        value = value.substring(3);
-    }
-    
-    if (value.startsWith('0')) {
-        // Keep as is
-    } else if (value.length >= 10) {
-        value = '0' + value;
-    }
-    
-    e.target.value = value;
-}
-
 // Utility functions
 function debounce(func, wait) {
     let timeout;
@@ -1111,7 +907,6 @@ function showFieldError(fieldName, message) {
     if (errorElement) {
         errorElement.textContent = message;
         errorElement.style.display = 'block';
-        errorElement.className = 'form-error';
     }
     
     if (inputElement) {
@@ -1126,12 +921,11 @@ function showFieldSuccess(fieldName, message) {
     if (errorElement) {
         errorElement.textContent = message;
         errorElement.style.display = 'block';
-        errorElement.className = 'form-success';
+        errorElement.style.color = 'green';
     }
     
     if (inputElement) {
         inputElement.classList.remove('error');
-        inputElement.classList.add('success');
     }
 }
 
@@ -1145,7 +939,7 @@ function clearFieldError(fieldName) {
     }
     
     if (inputElement) {
-        inputElement.classList.remove('error', 'success');
+        inputElement.classList.remove('error');
     }
 }
 
@@ -1158,32 +952,17 @@ function clearStepErrors() {
     
     const inputElements = document.querySelectorAll('.error');
     inputElements.forEach(el => {
-        el.classList.remove('error', 'success');
+        el.classList.remove('error');
     });
 }
 
 function showAlert(message, type = 'error') {
-    const alertBox = document.getElementById('alertBox');
-    const alertMessage = document.getElementById('alertMessage');
-    
-    if (alertBox && alertMessage) {
-        alertBox.className = `alert alert-${type}`;
-        alertMessage.textContent = message;
-        alertBox.style.display = 'flex';
-        
-        // Auto hide success messages
-        if (type === 'success') {
-            setTimeout(() => {
-                alertBox.style.display = 'none';
-            }, 5000);
-        }
-    } else {
-        // Fallback to alert
-        alert(message);
-    }
+    // Simple alert for now
+    alert(message);
 }
 
 function convertTo12Hour(time24) {
+    if (!time24) return '';
     const [hours, minutes] = time24.split(':');
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? 'রাত' : 'সকাল';
@@ -1193,6 +972,50 @@ function convertTo12Hour(time24) {
 
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Handle final registration
+async function handleRegistration(e) {
+    e.preventDefault();
+    
+    if (isSubmitting) return;
+    
+    // Final validation
+    if (!validateStep4()) {
+        return;
+    }
+    
+    showSubmittingState();
+    
+    try {
+        // Simple registration for demo
+        const registrationData = {
+            ...formData,
+            medicines: selectedMedicines,
+            registeredAt: new Date().toISOString()
+        };
+        
+        // Store in localStorage
+        const pharmacies = JSON.parse(localStorage.getItem('pharmacies') || '[]');
+        const newPharmacy = {
+            id: 'pharmacy_' + Date.now(),
+            ...registrationData
+        };
+        
+        pharmacies.push(newPharmacy);
+        localStorage.setItem('pharmacies', JSON.stringify(pharmacies));
+        
+        // Auto login
+        localStorage.setItem('loggedInPharmacy', JSON.stringify(newPharmacy));
+        
+        showSuccessMessage();
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        showAlert('নিবন্ধনে সমস্যা হয়েছে। আবার চেষ্টা করুন।', 'error');
+    } finally {
+        hideSubmittingState();
+    }
 }
 
 // Loading states
@@ -1230,29 +1053,16 @@ function hideSubmittingState() {
 
 function showSuccessMessage() {
     const successMessage = document.getElementById('successMessage');
-    if (successMessage) {
+    const registrationForm = document.getElementById('registrationForm');
+    
+    if (successMessage && registrationForm) {
         successMessage.classList.remove('hidden');
-        
-        // Hide form
-        const registrationForm = document.getElementById('registrationForm');
-        if (registrationForm) {
-            registrationForm.style.display = 'none';
-        }
-    } else {
-        showAlert('নিবন্ধন সফল হয়েছে! আপনি শীঘ্রই ড্যাশবোর্ডে নিয়ে যাওয়া হবেন।', 'success');
+        registrationForm.style.display = 'none';
     }
 }
 
 // Setup UI enhancements
 function setupUIEnhancements() {
-    // Add step animations
-    const steps = document.querySelectorAll('.form-step');
-    steps.forEach((step, index) => {
-        if (index === 0) {
-            step.classList.add('fade-in');
-        }
-    });
-    
     // 24-hour toggle handler
     const is24HoursCheckbox = document.getElementById('is24Hours');
     if (is24HoursCheckbox) {
@@ -1260,131 +1070,340 @@ function setupUIEnhancements() {
             const timeInputs = document.querySelectorAll('#openTime, #closeTime');
             timeInputs.forEach(input => {
                 input.disabled = e.target.checked;
-                if (e.target.checked) {
-                    input.value = '';
-                }
             });
         });
     }
+}
+
+// Password toggle function
+function togglePassword(fieldId) {
+    const input = document.getElementById(fieldId);
+    const icon = input.nextElementSibling.querySelector('i');
     
-    // Setup keyboard navigation
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && e.ctrlKey) {
-            // Ctrl+Enter to go to next step
-            if (currentStep < totalSteps) {
-                document.querySelector('.btn-next')?.click();
-            } else {
-                document.querySelector('.btn-submit')?.click();
-            }
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Debug functions
+window.debugRegistration = {
+    nextStep: handleNextStep,
+    setStep: (step) => { 
+        currentStep = step; 
+        showStep(currentStep);
+        updateStepIndicator();
+    },
+    currentStep: () => currentStep,
+    formData: () => formData,
+    selectedMedicines: () => selectedMedicines
+};
+
+// Emergency navigation functions
+window.forceNextStep = function() {
+    if (currentStep < totalSteps) {
+        currentStep++;
+        showStep(currentStep);
+        updateStepIndicator();
+        scrollToTop();
+    }
+};
+
+window.forcePrevStep = function() {
+    if (currentStep > 1) {
+        currentStep--;
+        showStep(currentStep);
+        updateStepIndicator();
+        scrollToTop();
+    }
+};
+
+console.log('Registration script loaded successfully');
+// Handle 24-hour checkbox
+function handle24HourToggle() {
+  const is24HoursCheckbox = document.getElementById('is24Hours');
+  const timeInputs = document.querySelectorAll('#openTime, #closeTime');
+  const timeContainer = document.querySelector('.time-inputs');
+  
+  if (is24HoursCheckbox) {
+    is24HoursCheckbox.addEventListener('change', (e) => {
+      // Toggle time input visibility
+      if (timeContainer) {
+        timeContainer.style.display = e.target.checked ? 'none' : 'block';
+      }
+      
+      // Disable/enable time inputs
+      timeInputs.forEach(input => {
+        input.disabled = e.target.checked;
+        if (e.target.checked) {
+          input.value = ''; // Clear values when disabled
         }
+      });
     });
-    
-    // Setup tooltips
-    const tooltips = document.querySelectorAll('[data-tooltip]');
-    tooltips.forEach(element => {
-        element.addEventListener('mouseenter', showTooltip);
-        element.addEventListener('mouseleave', hideTooltip);
+  }
+}
+
+// Enhanced location display 
+function updateLocationDisplay(position) {
+  const locationStatus = document.getElementById('locationStatus');
+  
+  if (locationStatus) {
+    // Try to get location name using reverse geocoding
+    fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=YOUR_API_KEY`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.results && data.results[0]) {
+          const address = data.results[0].formatted_address;
+          locationStatus.innerHTML = `
+            <i class="fas fa-check-circle" style="color: green"></i>
+            অবস্থান পাওয়া গেছে:
+            <br>
+            <strong>${address}</strong>
+            <br>
+            <small>(${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)})</small>
+          `;
+        } else {
+          // Fallback to coordinates only
+          locationStatus.innerHTML = `
+            <i class="fas fa-check-circle" style="color: green"></i>
+            অবস্থান পাওয়া গেছে:
+            <br>
+            <strong>অক্ষাংশ: ${position.coords.latitude.toFixed(4)}</strong>
+            <br>
+            <strong>দ্রাঘিমাংশ: ${position.coords.longitude.toFixed(4)}</strong>
+          `;
+        }
+      })
+      .catch(err => {
+        // Fallback on error
+        locationStatus.innerHTML = `
+          <i class="fas fa-check-circle" style="color: green"></i>
+          অবস্থান পাওয়া গেছে
+          <br>
+          (${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)})
+        `;
+      });
+  }
+}
+
+// Enhanced location services setup
+function setupLocationServices() {
+  const getLocationBtn = document.getElementById('getLocationBtn');
+  const locationStatus = document.getElementById('locationStatus');
+
+  if (getLocationBtn) {
+    getLocationBtn.addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        showAlert('আপনার ব্রাউজার লোকেশন সাপোর্ট করে না', 'error');
+        return;
+      }
+
+      // Show loading state
+      getLocationBtn.disabled = true;
+      getLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> অবস্থান খোঁজা হচ্ছে...';
+
+      if (locationStatus) {
+        locationStatus.innerHTML = `
+          <i class="fas fa-spinner fa-spin"></i>
+          অবস্থান খোঁজা হচ্ছে...
+        `;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          userLocation = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          };
+
+          // Update location display with address
+          updateLocationDisplay(position);
+
+          // Update button state
+          getLocationBtn.disabled = false;
+          getLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> অবস্থান পাওয়া গেছে';
+          getLocationBtn.classList.add('success');
+        },
+        (error) => {
+          console.error('Location error:', error);
+          
+          if (locationStatus) {
+            locationStatus.innerHTML = `
+              <i class="fas fa-exclamation-triangle" style="color: #ef4444"></i>
+              অবস্থান পাওয়া যায়নি
+            `;
+          }
+
+          getLocationBtn.disabled = false;
+          getLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> আবার চেষ্টা করুন';
+          
+          let errorMsg = 'অবস্থান পাওয়া যায়নি।';
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMsg += ' অনুমতি প্রয়োজন।';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMsg += ' অবস্থান তথ্য পাওয়া যায়নি।';
+              break;
+            case error.TIMEOUT:
+              errorMsg += ' সময়সীমা শেষ।';
+              break;
+          }
+          showAlert(errorMsg, 'error');
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
     });
+  }
+
+  // Try to get location automatically on page load
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        userLocation = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        };
+        updateLocationDisplay(position);
+      },
+      (error) => console.log('Auto location failed:', error),
+      {enableHighAccuracy: true}
+    );
+  }
 }
 
-// Tooltip functions
-function showTooltip(e) {
-    const tooltip = document.createElement('div');
-    tooltip.className = 'tooltip';
-    tooltip.textContent = e.target.getAttribute('data-tooltip');
-    document.body.appendChild(tooltip);
-    
-    const rect = e.target.getBoundingClientRect();
-    tooltip.style.left = rect.left + 'px';
-    tooltip.style.top = (rect.top - tooltip.offsetHeight - 5) + 'px';
-}
-
-function hideTooltip() {
-    const tooltip = document.querySelector('.tooltip');
-    if (tooltip) {
-        tooltip.remove();
-    }
-}
-
-// Form data persistence (save to localStorage on page unload)
-window.addEventListener('beforeunload', () => {
-    if (Object.keys(formData).length > 0) {
-        localStorage.setItem('registrationFormData', JSON.stringify({
-            formData,
-            selectedMedicines,
-            currentStep
-        }));
-    }
+// Call this in your initialization code
+document.addEventListener('DOMContentLoaded', () => {
+  handle24HourToggle();
+  setupLocationServices();
+  // ... other initialization code
 });
 
-// Restore form data on page load
-window.addEventListener('load', () => {
-    const savedData = localStorage.getItem('registrationFormData');
-    if (savedData) {
-        try {
-            const parsed = JSON.parse(savedData);
-            formData = parsed.formData || {};
-            selectedMedicines = parsed.selectedMedicines || [];
-            
-            // Ask user if they want to restore
-            if (Object.keys(formData).length > 0) {
-                if (confirm('আপনার আগের ফর্মের তথ্য পাওয়া গেছে। এটি পুনরুদ্ধার করতে চান?')) {
-                    currentStep = parsed.currentStep || 1;
-                    showStep(currentStep);
-                    updateStepIndicator();
-                } else {
-                    localStorage.removeItem('registrationFormData');
-                }
-            }
-        } catch (error) {
-            console.error('Error restoring form data:', error);
-        }
+// Enhance form validation 
+function validateStep1() {
+  console.log('Validating step 1');
+  let isValid = true;
+  clearStepErrors();
+
+  const is24Hours = document.getElementById('is24Hours').checked;
+  const requiredFields = [
+    'pharmacyName',
+    'pharmacyAddress',
+    'pharmacyPhone'
+  ];
+
+  // Add time fields if not 24 hours
+  if (!is24Hours) {
+    requiredFields.push('openTime', 'closeTime');
+  }
+
+  requiredFields.forEach(fieldName => {
+    const field = document.getElementById(fieldName);
+    if (!field || !field.value.trim()) {
+      showFieldError(fieldName, 'এই তথ্যটি প্রয়োজন');
+      isValid = false;
     }
-});
+  });
 
-// Clear saved data on successful registration
-function clearSavedFormData() {
-    localStorage.removeItem('registrationFormData');
-}
+  // Validate phone format
+  const phone = document.getElementById('pharmacyPhone').value.trim();
+  const phoneRegex = /^01[3-9]\d{8}$/;
+  if (phone && !phoneRegex.test(phone)) {
+    showFieldError('pharmacyPhone', 'সঠিক ফোন নম্বর দিন (যেমন: 01712345678)');
+    isValid = false;
+  }
 
-// Development helpers
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    // Add development shortcuts
-    window.mediMapDev = {
-        fillDemoData: () => {
-            formData = {
-                pharmacyName: 'টেস্ট ফার্মাসি',
-                pharmacyAddress: 'মিরপুর-১, ঢাকা',
-                pharmacyPhone: '01712345678',
-                pharmacyEmail: 'test@pharmacy.com',
-                openTime: '08:00',
-                closeTime: '22:00',
-                ownerName: 'জনাব টেস্ট',
-                ownerPhone: '01787654321',
-                ownerNID: '1234567890123',
-                username: 'test_pharmacy_' + Date.now(),
-                password: '123456'
-            };
-            selectedMedicines = [
-                { name: 'নাপা', category: 'fever', uses: ['জ্বর', 'ব্যথা'] },
-                { name: 'হিস্টাসিন', category: 'allergy', uses: ['এলার্জি', 'সর্দি'] }
-            ];
-            loadStepData(currentStep);
-            console.log('Demo data filled');
-        },
-        
-        goToStep: (step) => {
-            currentStep = step;
-            showStep(currentStep);
-            updateStepIndicator();
-        },
-        
-        skipToEnd: () => {
-            currentStep = 4;
-            showStep(currentStep);
-            updateStepIndicator();
-        }
-    };
+  // Validate time if not 24 hours
+  if (!is24Hours) {
+    const openTime = document.getElementById('openTime').value;
+    const closeTime = document.getElementById('closeTime').value;
     
-    console.log('Development helpers available: window.mediMapDev');
+    if (openTime && closeTime && openTime >= closeTime) {
+      showFieldError('closeTime', 'বন্ধের সময় খোলার সময়ের পরে হতে হবে');
+      isValid = false;
+    }
+  }
+
+  return isValid;
 }
+
+// Enhanced step transitions
+function showStep(step) {
+  const steps = document.querySelectorAll('.form-step');
+  const stepTitles = [
+    'ফার্মাসি তথ্য',
+    'মালিকের তথ্য', 
+    'ওষুধ নির্বাচন',
+    'নিশ্চিতকরণ'
+  ];
+
+  // Hide all steps first
+  steps.forEach(s => {
+    s.style.display = 'none';
+    s.classList.remove('active');
+  });
+
+  // Show current step with animation
+  const currentStep = steps[step - 1];
+  if (currentStep) {
+    currentStep.style.display = 'block';
+    setTimeout(() => {
+      currentStep.classList.add('active');
+    }, 10);
+  }
+
+  // Update title
+  const stepTitle = document.querySelector('.step-title');
+  if (stepTitle) {
+    stepTitle.textContent = `ধাপ ${step}: ${stepTitles[step - 1]}`;
+    
+    // Add animation
+    stepTitle.classList.add('title-change');
+    setTimeout(() => {
+      stepTitle.classList.remove('title-change');
+    }, 500);
+  }
+
+  // Load step data
+  loadStepData(step);
+}
+
+// Add CSS for animations
+const style = document.createElement('style');
+style.textContent = `
+  .form-step {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease-out;
+  }
+
+  .form-step.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .title-change {
+    animation: titleFade 0.5s ease-out;
+  }
+
+  @keyframes titleFade {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+document.head.appendChild(style);

@@ -4,14 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediMap - ফার্মাসি লগইন</title>
+    <link rel="icon" type="image/x-icon" href="assets/fabdicon.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kalpurush&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Firebase CDN -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
     <link href="css/style.css" rel="stylesheet">
-    <link href="css/pharmacy_login.css" rel="stylesheet">
     <link href="css/pharmacy_login.css" rel="stylesheet">
     <link href="css/responsive.css" rel="stylesheet">
 </head>
@@ -21,8 +17,7 @@
         <div class="container">
             <nav class="nav">
                 <a href="index.html" class="logo">
-                    <div class="logo-placeholder">LOGO</div>
-                    <h1>MediMap</h1>
+                    <img src="assets/main-logo.png" alt="">
                 </a>
                 <div class="nav-buttons">
                     <a href="#" class="btn btn-secondary" id="languageToggle" onclick="toggleLanguage()">
@@ -97,7 +92,7 @@
                                     required
                                     autocomplete="current-password"
                                 >
-                                <button type="button" class="password-toggle" onclick="togglePassword()">
+                                <button type="button" class="password-toggle" onclick="toggleLoginPassword()">
                                     <i class="fas fa-eye" id="passwordToggleIcon"></i>
                                 </button>
                             </div>
@@ -114,7 +109,7 @@
                         </div>
 
                         <!-- Submit Button -->
-                        <button type="submit" class="btn btn-primary btn-login">
+                        <button type="submit" class="btn btn-primary btn-login" onclick="handleLoginClick(event)">
                             <i class="fas fa-sign-in-alt"></i>
                             <span id="loginButtonText">লগইন করুন</span>
                         </button>
@@ -231,6 +226,12 @@
             <p>লগইন করা হচ্ছে...</p>
         </div>
     </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
 
     <!-- Scripts -->
     <script src="js/firebase-config.js"></script>

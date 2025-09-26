@@ -110,21 +110,27 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
     border: none;
     color: white;
     cursor: pointer;
+    /* Ensures the icon inside is perfectly centered */
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
+    gap: 2px;
+    /* Smooth transitions for hover and active states */
+    transition: background 0.3s ease, transform 0.3s ease;
+    /* Removes the default browser outline when the button is focused */
+    outline: none;
 }
 
 .btn-icon:hover {
-    background: rgba(255, 255, 255, 0.2);
+    /* Stronger background on hover for a more interactive feel */
+    background: rgba(255, 255, 255, 0.3);
+    /* Adds a subtle lift effect */
     transform: translateY(-2px);
 }
-
 .notification-badge {
     position: absolute;
     top: -2px;
@@ -206,7 +212,6 @@
     padding: 2rem;
     min-height: calc(100vh - 70px);
 }
-
 /* Sections */
 .admin-section {
     display: none;
@@ -450,7 +455,7 @@
     border-radius: 6px;
 }
 
-/* Forms */
+/* Forms - FIXED TEXT CONTRAST */
 .form-container {
     background: white;
     padding: 2rem;
@@ -460,6 +465,36 @@
 
 .admin-form {
     max-width: 800px;
+}
+
+/* Form labels and text - FIXED CONTRAST */
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151; /* Dark gray for better contrast */
+    font-size: 14px;
+}
+
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1f2937; /* Dark text color for inputs */
+    background-color: white;
+    transition: border-color 0.3s ease;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-input::placeholder {
+    color: #9ca3af; /* Lighter placeholder text */
 }
 
 .form-row {
@@ -484,10 +519,17 @@
     padding: 8px;
     border-radius: 8px;
     transition: background 0.3s ease;
+    color: #374151; /* Dark text for checkboxes */
+    font-weight: 500;
 }
 
 .checkbox-label:hover {
     background: #f8fafc;
+}
+
+/* Ensure checkbox text is visible */
+.checkbox-label input[type="checkbox"] {
+    margin: 0;
 }
 
 .form-actions {
@@ -497,6 +539,50 @@
     margin-top: 2rem;
     padding-top: 1rem;
     border-top: 1px solid #e2e8f0;
+}
+
+/* Additional fixes for better contrast throughout */
+.admin-section h2, 
+.admin-section h3 {
+    color: #1e293b; /* Ensure headings have good contrast */
+}
+
+/* Modal text contrast fixes */
+.modal-content {
+    background: white;
+    color: #1f2937; /* Dark text for modals */
+}
+
+.modal-header h3 {
+    color: #1e293b;
+}
+
+/* Settings section text contrast */
+.settings-section h3 {
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.setting-option {
+    color: #374151;
+    font-weight: 500;
+}
+
+/* Profile section text contrast */
+.profile-container .form-label {
+    color: #374151;
+}
+
+/* Ensure all text in white containers has proper contrast */
+.admin-section > *:not(.form-container) {
+    color: #1f2937; /* Default dark text color */
+}
+
+/* Specific fix for the Add Medicine section */
+#add-medicine .form-label,
+#add-medicine .checkbox-label,
+#add-medicine h2 {
+    color: #1e293b; /* Dark color for good contrast on white background */
 }
 
 /* Profile Section */

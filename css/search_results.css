@@ -32,7 +32,7 @@ h1 {
 
 /* Medicine Search Results */
 .medicine-item {
-    padding: 15px;
+    padding-bottom: 6px;
     border-bottom: 1px solid #e2e8f0;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -86,8 +86,7 @@ p {
     background: #f8fafc !important;
     color: white;
     padding: 1rem 0 !important;
-    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.2);
-    /* background: #fff; */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       
 }
 
@@ -111,7 +110,439 @@ p {
         transform: translateY(-8px);
     }
 }
+ /* General Styles */
+      body {
+        font-family: "Inter", "Kalpurush", Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #f8fafc;
+        margin: 0;
+      }
 
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header Styles */
+      .header {
+        background: #f8fafc !important;
+        color: white;
+        padding: 1rem 0 !important;
+        box-shadow: 0 2px 10px rgba(37, 99, 235, 0.2);
+      }
+
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center !important;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: white;
+      }
+
+      .logo img {
+        width: 150px;
+        object-fit: contain;
+        transform: translateY(-8px);
+      }
+
+      .back-btn {
+        background: #4e73ab;
+        color: white;
+        padding: 12px 24px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        transform: translateY(2px);
+      }
+
+      .back-btn:hover {
+        background: #526d96;
+      }
+      /* Search Header */
+      .search-header {
+        background: #f8fafc;
+        padding: 2rem 0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        text-align: left;
+      }
+      .search-hero{
+        display: flex;
+        justify-content: space-between;
+        margin: 0 100px 0 40px ;
+        max-width: 1200px;
+        margin: 0 auto;
+        img{
+          width: 200px;
+
+
+        }
+      }
+
+      .search-info {
+
+        text-align: left;
+        padding-left: 20px;
+      }
+
+      .search-info h2 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: #1e293b;
+      }
+
+      .search-query {
+        background: #1d4ed8;
+        color: #f4f1f1f8;
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: inline-block;
+        font-weight: 600;
+        margin: 0 8px;
+        text-decoration: underline;
+      }
+
+      .results-count {
+        margin-top: 1rem;
+        color: #64748b;
+        font-size: 1.2rem;
+        font-weight: 500;
+      }
+
+      /* Filters */
+      .filters {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+      }
+
+      .filter-row {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .filter-group label {
+        color: #4a5568;
+        font-weight: 500;
+      }
+
+      .filter-select {
+        width: 150px;
+        padding: 10px 15px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        color: #4a5568;
+      }
+
+      .filter-select:focus {
+        outline: none;
+        border-color: #2563eb;
+      }
+
+      /* Results Container */
+      .results-container {
+        display: flex;
+        padding-top: 20px;
+        width: 100%;
+      }
+
+      .results-list {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+         height: 75dvh;
+         overflow-y: auto; 
+        gap: 15px;
+        padding: 0 10px;
+      }
+
+      .map-sidebar {
+        width: 50%; /* 50% width for the map */
+        height: 100%; /* 100% height for the map */
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        position: relative;
+        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+      }
+
+
+
+
+
+      .pharmacy-name {
+        color: #1e293b;
+        padding-bottom: 5px;
+        font-weight: 600;
+      }
+
+      .pharmacy-status {
+        font-size: 14px;
+        text-align: center;
+        margin-top: 5px;
+        transition: 0.3s;
+      }
+
+      .pharmacy-status:hover {
+        transform: translateY(-1px);
+      }
+
+      .medicine-box {
+        margin: 5px 0;
+        background: #f1f5f9;
+        border-radius: 8px;
+        padding: 8px 15px;
+        transition: 0.3s;
+        color: #313c4d;
+      }
+
+      .medicine-box:hover {
+        transform: scale(1.03);
+        box-shadow: 0 2px 6px #cbd5e0;
+      }
+      .pharmacy-actions .btn:first-child{
+        margin: 10px 0;
+        
+      }
+
+      /* Map Sidebar */
+      .map-sidebar{
+        height: 76dvh;
+        padding: 0 !important;
+        display: flex;
+        flex-direction: column;
+
+        align-items: center;
+      }
+      .map-sidebar h3 {
+        margin-bottom: 15px;
+        color: #1e293b;
+      }
+
+      .map-sidebar h3 i {
+        color: #2563eb;
+      }
+
+      #map {
+        width: 100%;
+        height: 90%;
+        background: #e2e8f0;
+        border-radius: 10px;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        box-sizing: border-box;
+      }
+
+      #map div {
+        text-align: center;
+      }
+
+      #map div i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+
+      } 
+
+      .location-info {
+        text-align: center;
+        margin-bottom: 10px;
+
+      }
+
+      .current-location {
+        color: #2563eb;
+        font-weight: 600;
+      }
+
+      .btn-primary {
+        
+        width: 90%;
+        
+        padding: 12px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+      }
+
+      .btn-primary:hover {
+        background-color: #1e4dcf;
+        box-shadow: 0 0 0 0 ;
+      }
+
+      .no-results {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+      }
+
+      .no-results-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+      }
+
+      .btn-secondary {
+        background: #64748b;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-secondary:hover {
+        background: #475569;
+      }
+
+      /* Loading */
+      .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+      }
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e2e8f0;
+        border-top: 4px solid #2563eb;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .results-container {
+          flex-direction: column;
+        }
+
+        .results-list,
+        .map-sidebar {
+          width: 100%;
+          
+        }
+
+        .map-sidebar {
+          margin-top: 20px;
+        }
+
+        .filter-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .filter-group {
+          justify-content: space-between;
+        }
+        /* Responsive Styles */
+
+/* Smaller than standard 960 (devices less than 960px) */
+@media only screen and (max-width: 959px) {
+  .search-hero {
+    margin: 0 20px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .search-hero img {
+    width: 150px;
+    margin-bottom: 20px;
+  }
+
+  .search-info {
+    text-align: center;
+    padding-left: 0;
+  }
+
+  .filters .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-select {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .results-container {
+    flex-direction: column;
+  }
+
+  .results-list {
+    width: 100%;
+    order: 1;
+  }
+
+  .map-sidebar {
+    width: 100%;
+    order: 2;
+    height: auto;
+  }
+
+  #map {
+    height: 400px;
+  }
+}
+
+/* Mobile Portrait Size to Mobile Landscape Size (devices between 320 and 480 px) */
+@media only screen and (max-width: 480px) {
+  .search-info h2 {
+    font-size: 2rem;
+  }
+
+  .results-count {
+    font-size: 1rem;
+  }
+
+  .pharmacy-card {
+    font-size: 14px;
+  }
+}
+      }
 
 .nav-buttons {
     display: flex;
@@ -233,9 +664,9 @@ p {
     background: white;
     border-radius: 15px;
     padding: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px !important;
     transition: all 0.3s ease;
-    border: 2px solid transparent;
+    border: none !important;
 }
 
 .card:hover {
@@ -526,17 +957,6 @@ p {
     margin: 0 auto 1.5rem;
 }
 
-/* Footer */
-.footer {
-    background: #1e293b;
-    color: white;
-    padding: 3rem 0 2rem;
-    text-align: center;
-}
-
-.footer h3 {
-    color: white;
-}
 
 /* Utility Classes */
 .hidden {
@@ -694,4 +1114,247 @@ p {
     background: #eff6ff;
     color: #1e40af;
     border-color: #93c5fd;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: white !important;
+    }
+}
+.card,
+.pharmacy-card,
+.login-card,
+.registration-form {
+        background: white !important;
+        border-color: var(--border-color);
+        color: black;
+    }
+
+
+.card-header {
+  display: flex; /* Makes the children flex items */
+  justify-content: space-between; /* Pushes the first item to the left and the second to the right */
+  align-items: center; /* Vertically centers the items */
+}
+.map-btn,
+.call-btn,
+.dir-btn {
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background-color: #488aec;
+  color: #ffffff;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  text-transform: uppercase;
+  vertical-align: middle;
+  align-items: center;
+  border-radius: 0.5rem;
+  user-select: none;
+  gap: 0.75rem;
+  box-shadow:
+    0 4px 6px -1px #488aec31,
+    0 2px 4px -1px #488aec17;
+  transition: all 0.6s ease;
+}
+
+.map-btn,
+.call-btn,
+.dir-btn:hover {
+  box-shadow:
+    0 10px 15px -3px #488aec4f,
+    0 4px 6px -2px #488aec17;
+}
+
+.map-btn,
+.call-btn,
+.dir-btn:focus,
+.map-btn,
+.call-btn,
+.dir-btn:active {
+  opacity: 0.85;
+  box-shadow: none;
+}
+.buttons{
+    padding-left: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.contact {
+
+  color: oklch(67.4% .164 253.893);
+ 
+}
+.contact a{
+  color: oklch(67.4% .164 253.893);
+  padding-left: 8px;
+ 
+}
+
+
+.search-header {
+    display: none !important;
+}
+.bbaa{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+
+
+.card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 450px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-content {
+    padding: 20px;
+}
+
+/* --- Fixed CSS for Layout --- */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.card-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.status {
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+/* --- End of Fixed CSS --- */
+
+.info {
+    color: #777;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.info .fa-solid, .contact .fa-solid {
+    margin-right: 8px;
+    color: #007bff;
+}
+
+.medicine-list {
+    margin-bottom: 15px;
+}
+
+.medicine-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    padding: 8px 0;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.medicine-item:last-child {
+    border-bottom: none;
+}
+
+.contact {
+    margin-bottom: 20px;
+}
+
+.contact a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.contact a:hover {
+    color: #0056b3;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.buttons button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.map-btn {
+    background-color: #e6f0ff;
+    color: #007bff;
+}
+
+.map-btn:hover {
+    background-color: #d1e2f9;
+    transform: translateY(-2px);
+}
+
+.dir-btn {
+    background-color: #007bff;
+    text-align: center;
+    color: #fff;
+}
+
+.dir-btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+.medimap-notification {
+  color: black;
 }
