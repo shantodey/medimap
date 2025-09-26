@@ -316,6 +316,52 @@ let currentStatusFilter = 'all';
 let currentDistanceFilter = 'all';
 let currentClinicTypeFilter = 'all';
 let currentVisitTypeFilter = 'all';
+
+// Get current location - MOVED TO GLOBAL SCOPE
+function getCurrentLocation() {
+    // Wait for MapsManager to be available
+    if (typeof MapsManager === 'undefined') {
+        setTimeout(getCurrentLocation, 500);
+        return;
+    }
+
+    const loading = document.querySelector('.map-placeholder');
+    if (loading) {
+        loading.innerHTML = '<i class="fas fa-spinner fa-spin"></i><br>অবস্থান খুঁজছি...';
+    }
+
+    // Use MapsManager's proper geolocation
+    MapsManager.getCurrentLocation()
+        .then(position => {
+            console.log('[Search] Real location obtained:', position);
+            
+            // Store globally for search filtering
+            window.userLocation = position;
+            userLocation = position;
+            
+            // Update UI
+            const locationEl = document.querySelector('.current-location');
+            if (locationEl) {
+                locationEl.innerHTML = `
+                    <i class="fas fa-location-arrow"></i>
+                    আপনার অবস্থান পাওয়া গেছে
+                `;
+            }
+            
+            // Refresh search results with real location
+            if (typeof displayResults === 'function') {
+                displayResults();
+            }
+        })
+        .catch(error => {
+            console.error('[Search] Location error:', error);
+            alert('অবস্থান খুঁজে পাওয়া যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।');
+            
+            if (loading) {
+                loading.innerHTML = '<i class="fas fa-map"></i><br>Google Maps<br>লোড হচ্ছে...';
+            }
+        });
+}
 // currentRadius is defined in maps.js
 
 // Debug function to check DOM elements

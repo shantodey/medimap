@@ -270,7 +270,7 @@ const MapsManager = {
                     <strong>ফোন:</strong> <a href="tel:${pharmacy.phone}">${pharmacy.phone}</a>
                 </div>
                 <div style="margin-bottom: 8px;">
-                    <strong>সময়:</strong> ${pharmacy.openingHours}
+                    <strong>enableHighAccuracy: true,:</strong> ${pharmacy.openingHours}
                 </div>
                 <div style="margin-bottom: 12px;">
                     <strong>অবস্থা:</strong> ${status}
@@ -348,8 +348,8 @@ const MapsManager = {
 
             const options = {
                 enableHighAccuracy: true,
-                timeout: 15000, // Increased timeout
-                maximumAge: 60000 // 1 minute cache
+                timeout: 30000, // Increased timeout
+                maximumAge: 0// 1 minute cache
             };
 
             navigator.geolocation.getCurrentPosition(
@@ -679,7 +679,19 @@ const MapsManager = {
             </div>
         `;
     },
-    
+        // Calculate distance between two points using Haversine formula
+    calculateDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371; // Earth's radius in kilometers
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distance = R * c; // Distance in kilometers
+        return distance;
+    },
     // Cleanup function
     cleanup() {
         // Clear markers
@@ -771,4 +783,3 @@ window.StreetViewManager = StreetViewManager;
 window.MAPS_CONFIG = MAPS_CONFIG;
 window.currentRadius = currentRadius;
 
-console.log('[MediMap] Maps.js loaded');
