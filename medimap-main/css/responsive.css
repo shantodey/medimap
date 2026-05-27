@@ -1,0 +1,891 @@
+/* MediMap Responsive Styles */
+
+/* Mobile-First Approach */
+
+/* Extra Small Devices (Phones, 320px and up) */
+@media (max-width: 479px) {
+    
+    /* Container */
+    .container {
+        padding: 0 15px;
+    }
+    
+    /* Header */
+    .header {
+        padding: 0.5rem 0;
+    }
+    
+    .nav {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .logo h1 {
+        font-size: 20px;
+    }
+    
+    .logo-placeholder {
+        width: 35px;
+        height: 35px;
+        font-size: 12px;
+    }
+    
+    .nav-buttons {
+        flex-direction: row;
+        gap: 8px;
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+    
+    /* Hero Section */
+    .hero {
+        padding: 2rem 0;
+        text-align: center;
+    }
+    
+    .hero h2 {
+        font-size: 1.5rem;
+        line-height: 1.3;
+    }
+    
+    .hero p {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Search Section */
+    .search-section {
+        padding: 2rem 0;
+        margin-top: -30px;
+    }
+    
+    .search-tabs {
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .tab-btn {
+        padding: 12px 20px;
+        width: 100%;
+    }
+    
+    .search-input {
+        padding: 14px 20px 14px 50px;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    .search-btn {
+        padding: 14px;
+        font-size: 16px;
+    }
+    
+    /* Symptom Grid */
+    .symptom-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .symptom-card {
+        padding: 15px;
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .symptom-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        margin: 0 auto;
+    }
+    
+    /* Features */
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .feature-card {
+        padding: 1.5rem;
+    }
+    
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+    }
+    
+    /* Emergency Section */
+    .emergency-section {
+        padding: 2rem 0;
+        margin: 2rem 0;
+    }
+    
+    .emergency-section h3 {
+        font-size: 1.5rem;
+    }
+    
+    /* Search Results */
+    .results-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .pharmacy-card {
+        padding: 15px;
+    }
+    
+    .pharmacy-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .pharmacy-details {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .pharmacy-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .pharmacy-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Map Sidebar */
+    .map-sidebar {
+        order: -1;
+        position: relative;
+        top: 0;
+    }
+    
+    .map-container {
+        height: 250px;
+    }
+    
+    /* Filters */
+    .filters {
+        padding: 1rem;
+    }
+    
+    .filter-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .section-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    /* Login Page */
+    .login-main {
+        padding: 1rem 0;
+    }
+    
+    .login-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 0 10px;
+    }
+    
+    .login-card,
+    .login-info {
+        padding: 1.5rem;
+    }
+    
+    .login-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+    
+    .login-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .info-list {
+        gap: 1rem;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+    
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+        align-self: center;
+    }
+    
+    .support-options {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .support-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Registration Page */
+    .registration-main {
+        padding: 1rem 0 2rem;
+    }
+    
+    .registration-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .step-indicators {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .step-number {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+    
+    .step-label {
+        font-size: 12px;
+    }
+    
+    .registration-form {
+        margin: 0 10px;
+    }
+    
+    .step-content {
+        padding: 1.5rem 1rem;
+    }
+    
+    .step-title-container {
+        padding: 1.5rem 1rem;
+    }
+    
+    .step-title {
+        font-size: 1.2rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .step-navigation {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-prev,
+    .btn-next,
+    .btn-submit {
+        width: 100%;
+        margin: 0;
+        order: 1;
+    }
+    
+    .btn-prev {
+        order: 2;
+    }
+    
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .medicine-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .medicine-card {
+        padding: 15px;
+    }
+    
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .terms-list {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Admin Dashboard */
+    .admin-main {
+        margin-left: 0;
+        padding: 1rem;
+    }
+    
+    .admin-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        width: 100%;
+        z-index: 1001;
+    }
+    
+    .admin-sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .admin-header-content {
+        padding: 0 1rem;
+    }
+    
+    .user-details {
+        display: none;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .stat-card {
+        padding: 1.5rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 18px;
+    }
+    
+    .action-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .action-card {
+        padding: 1rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .section-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .inventory-table {
+        font-size: 14px;
+    }
+    
+    .inventory-table th,
+    .inventory-table td {
+        padding: 8px;
+    }
+    
+    .table-actions {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    /* Modal */
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .modal-header {
+        padding: 15px;
+    }
+    
+    .modal-body {
+        padding: 15px;
+    }
+    
+    /* Notifications */
+    .medimap-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    /* Forms */
+    .form-input,
+    .form-textarea,
+    .form-select {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 12px 14px;
+    }
+    
+    .checkbox-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Small Devices (Landscape phones, 480px and up) */
+@media (min-width: 480px) and (max-width: 767px) {
+    
+    .container {
+        padding: 0 20px;
+    }
+    
+    /* Hero adjustments */
+    .hero h2 {
+        font-size: 2rem;
+    }
+    
+    /* Search tabs in row for landscape */
+    .search-tabs {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    /* Symptom grid 2 columns */
+    .symptom-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Features 2 columns */
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Stats 2 columns */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Action cards 3 columns */
+    .action-cards {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    /* Step indicators back to 4 columns */
+    .step-indicators {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    /* Medicine grid 2 columns */
+    .medicine-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Services grid 2 columns */
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Medium Devices (Tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 991px) {
+    
+    /* Navigation adjustments */
+    .nav-buttons {
+        flex-direction: row;
+        gap: 15px;
+    }
+    
+    /* Hero */
+    .hero h2 {
+        font-size: 2.2rem;
+    }
+    
+    /* Search results layout */
+    .results-container {
+        grid-template-columns: 1fr 280px;
+    }
+    
+    /* Login layout */
+    .login-container {
+        grid-template-columns: 1fr;
+        max-width: 600px;
+    }
+    
+    .login-info {
+        order: -1;
+    }
+    
+    /* Registration */
+    .step-indicators {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 600px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .step-navigation {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    
+    .btn-prev,
+    .btn-next,
+    .btn-submit {
+        width: auto;
+    }
+    
+    /* Admin dashboard */
+    .admin-sidebar {
+        width: 250px;
+    }
+    
+    .admin-main {
+        margin-left: 250px;
+        padding: 1.5rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .action-cards {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    /* Symptom grid 3 columns */
+    .symptom-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    /* Medicine grid 2 columns */
+    .medicine-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Features 2 columns */
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Services grid 3 columns */
+    .services-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Large Devices (Desktops, 992px and up) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    
+    .container {
+        max-width: 960px;
+    }
+    
+    /* Search results full layout */
+    .results-container {
+        grid-template-columns: 1fr 300px;
+    }
+    
+    /* Login two column */
+    .login-container {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    /* Admin sidebar normal */
+    .admin-sidebar {
+        width: 280px;
+    }
+    
+    .admin-main {
+        margin-left: 280px;
+    }
+    
+    /* Stats 4 columns */
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    /* Medicine grid 3 columns */
+    .medicine-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    /* Features 3 columns */
+    .features-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Extra Large Devices (Large Desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    
+    .container {
+        max-width: 1200px;
+    }
+    
+    /* All grids at full capacity */
+    .symptom-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    
+    .medicine-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    
+    .features-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    
+    /* Crisper text rendering */
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Higher resolution icons */
+    .logo-placeholder,
+    .feature-icon,
+    .stat-icon {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+    }
+}
+
+/* Touch Device Optimizations */
+@media (pointer: coarse) {
+    
+    /* Larger touch targets */
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .tab-btn {
+        min-height: 48px;
+    }
+    
+    .symptom-card {
+        min-height: 64px;
+    }
+    
+    .medicine-card {
+        min-height: 72px;
+    }
+    
+    .nav-link {
+        min-height: 48px;
+    }
+    
+    /* Remove hover effects on touch devices */
+    .btn:hover,
+    .card:hover,
+    .symptom-card:hover,
+    .medicine-card:hover {
+        transform: none;
+    }
+    
+    /* Better focus indicators */
+    .btn:focus,
+    .form-input:focus,
+    .tab-btn:focus {
+        outline: 2px solid #2563eb;
+        outline-offset: 2px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    
+    * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    .header,
+    .footer,
+    .btn,
+    .loading-overlay,
+    .modal {
+        display: none !important;
+    }
+    
+    .container {
+        width: 100%;
+        max-width: none;
+        padding: 0;
+    }
+    
+    .pharmacy-card {
+        break-inside: avoid;
+        margin-bottom: 20px;
+        border: 1px solid #000;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    .search-section,
+    .registration-form,
+    .admin-section {
+        box-shadow: none;
+        border-radius: 0;
+    }
+    
+    body {
+        font-size: 12pt;
+        line-height: 1.4;
+        background: white;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .spinner {
+        animation: none;
+    }
+    
+    .btn:hover,
+    .card:hover {
+        transform: none;
+    }
+}
+
+/* Dark Mode (Future Feature) */
+@media (prefers-color-scheme: dark) {
+    
+    :root {
+        --bg-color: #1e293b;
+        --card-bg: #334155;
+        --text-color: #f1f5f9;
+        --border-color: #475569;
+    }
+    
+    body {
+        background: var(--bg-color);
+        color: var(--text-color);
+    }
+    
+    .card,
+    .pharmacy-card,
+    .login-card,
+    .registration-form {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+    }
+    
+    .form-input,
+    .form-textarea,
+    .form-select {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-color);
+    }
+    
+    .form-input::placeholder {
+        color: #94a3b8;
+    }
+}
+
+/* Landscape Orientation */
+@media (orientation: landscape) and (max-height: 500px) {
+    
+    .hero {
+        padding: 1rem 0;
+    }
+    
+    .hero h2 {
+        font-size: 1.8rem;
+    }
+    
+    .search-section {
+        padding: 1.5rem 0;
+    }
+    
+    .login-main,
+    .registration-main {
+        padding: 1rem 0;
+    }
+}
+
+/* Custom Scrollbar for Webkit Browsers */
+@media (min-width: 768px) {
+    
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+}
+
+/* Utility Classes for Responsive Design */
+.hide-mobile {
+    display: none;
+}
+
+.hide-desktop {
+    display: block;
+}
+
+@media (min-width: 768px) {
+    .hide-mobile {
+        display: block;
+    }
+    
+    .hide-desktop {
+        display: none;
+    }
+}
+
+/* Responsive Text Sizes */
+.text-responsive {
+    font-size: clamp(0.875rem, 2.5vw, 1.125rem);
+}
+
+.heading-responsive {
+    font-size: clamp(1.25rem, 5vw, 2.5rem);
+}
+
+/* Container Queries (Future Enhancement) */
+@supports (container-type: inline-size) {
+    .card-container {
+        container-type: inline-size;
+    }
+    
+    @container (max-width: 300px) {
+        .pharmacy-card {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+}
