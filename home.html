@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>MediMap | Healthcare Intelligence</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#191c1e",
+                        "tertiary": "#572800",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "on-secondary-container": "#5b675e",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-dim": "#d8dadc",
+                        "on-tertiary-fixed": "#311300",
+                        "surface-container": "#eceef0",
+                        "secondary": "#556158",
+                        "secondary-container": "#d9e6da",
+                        "tertiary-fixed": "#ffdcc6",
+                        "inverse-surface": "#2d3133",
+                        "success-mint": "#2E7D32",
+                        "surface-container-low": "#f2f4f6",
+                        "primary": "#003178",
+                        "primary-fixed-dim": "#b0c6ff",
+                        "on-secondary-fixed-variant": "#3e4a41",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#001945",
+                        "trust-teal": "#00796B",
+                        "on-tertiary-container": "#ffa76a",
+                        "secondary-fixed": "#d9e6da",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#00429c",
+                        "slate-text": "#1E293B",
+                        "primary-fixed": "#d9e2ff",
+                        "error-container": "#ffdad6",
+                        "emergency-orange": "#F57C00",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "background": "#f7f9fb",
+                        "surface-container-high": "#e6e8ea",
+                        "on-secondary-fixed": "#131e17",
+                        "outline-variant": "#c3c6d4",
+                        "inverse-primary": "#b0c6ff",
+                        "primary-container": "#0d47a1",
+                        "soft-gray": "#94A3B8",
+                        "on-surface-variant": "#434652",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#bdcabe",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface": "#f7f9fb",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "surface-tint": "#2b5bb5",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#793a00",
+                        "on-primary-container": "#a1bbff",
+                        "outline": "#737783",
+                        "on-background": "#191c1e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "container-max": "1280px",
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+                        "headline-xl-mobile": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(0, 49, 120, 0.85) 0%, rgba(0, 121, 107, 0.75) 100%);
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed">
+    <!-- TopNavBar -->
+    <header class="bg-surface sticky top-0 z-50 shadow-sm">
+        <nav
+            class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-base max-w-container-max mx-auto h-16">
+            <div class="flex items-center gap-8">
+                <span class="text-headline-md font-headline-md font-bold text-primary">MediMap</span>
+                <div class="hidden md:flex items-center gap-6">
+                    <a class="text-label-md font-label-md text-primary border-b-2 border-primary pb-1"
+                        href="#">Dashboard</a>
+                    <a class="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors"
+                        href="#">Inventory</a>
+                    <a class="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors"
+                        href="#">Analytics</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button
+                    class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container">language</button>
+                <button
+                    class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container">notifications</button>
+                <div
+                    class="h-10 w-10 rounded-full bg-surface-container-high border-2 border-outline-variant overflow-hidden">
+                    <img alt="Pharmacy Owner Profile" class="w-full h-full object-cover"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyMeow_jgoyD1UAwUlswCqgay1EU3tewP3krfK1R_xzn-7v1Xnsj6P-G8ok3dS3f9WviwNn03wlZgyXXM1znxHoCf37BHvy8H9t6wLbX9cuqIO0WU_M-xBThItJOOfaok2EOf-sAvsWD1-LKlHepxhBbKhdHzCGZcpDy9Ris3g2AFFh2WVH8LBminqsGHEvKYBjmnASPnaZrj85Wo6BiEWOcDv1WSpgPrprlkc7WRUo3g1SyJQ4gFnDFwAK_6plfa_SsgXh21QBA">
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <!-- Hero Section -->
+
+        <!-- Emergency Banner -->
+        <section class="bg-error px-margin-mobile md:px-margin-desktop py-12 text-center text-on-error">
+            <div class="max-w-container-max mx-auto">
+                <div class="flex items-center justify-center gap-2 mb-4">
+                    <span class="material-symbols-outlined text-[32px]"
+                        style="font-variation-settings: 'FILL' 1;">warning</span>
+                    <h2 class="text-headline-md font-headline-md">Emergency Services</h2>
+                </div>
+                <p class="text-body-md mb-6 text-on-error/90">For critical oxygen cylinders and urgent medicine needs
+                </p>
+                <button
+                    class="bg-emergency-orange hover:bg-tertiary-container text-white px-8 py-3 rounded-lg font-label-md text-label-md flex items-center gap-2 mx-auto transition-all shadow-lg active:scale-95">
+                    <span class="material-symbols-outlined">ambulance</span>
+                    Find Urgent Supplies
+                </button>
+            </div>
+        </section>
+        <!-- Symptoms Section -->
+        <section class="py-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-headline-lg font-headline-lg text-primary mb-2">Search by Symptoms</h2>
+                <p class="text-body-md text-on-surface-variant">Identify common ailments to find appropriate
+                    over-the-counter support</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-gutter">
+                <!-- Symptom Cards -->
+                <div
+                    class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant text-center hover:shadow-lg hover:border-primary transition-all cursor-pointer group">
+                    <div
+                        class="w-16 h-16 bg-secondary-container text-trust-teal rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined text-[32px]">thermostat</span>
+                    </div>
+                    <span class="text-label-md font-label-md text-on-surface">Fever</span>
+                </div>
+                <div
+                    class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant text-center hover:shadow-lg hover:border-primary transition-all cursor-pointer group">
+                    <div
+                        class="w-16 h-16 bg-secondary-container text-trust-teal rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined text-[32px]">ac_unit</span>
+                    </div>
+                    <span class="text-label-md font-label-md text-on-surface">Cold &amp; Cough</span>
+                </div>
+                <div
+                    class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant text-center hover:shadow-lg hover:border-primary transition-all cursor-pointer group">
+                    <div
+                        class="w-16 h-16 bg-secondary-container text-trust-teal rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined text-[32px]">psychiatry</span>
+                    </div>
+                    <span class="text-label-md font-label-md text-on-surface">Headache</span>
+                </div>
+                <div
+                    class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant text-center hover:shadow-lg hover:border-primary transition-all cursor-pointer group">
+                    <div
+                        class="w-16 h-16 bg-secondary-container text-trust-teal rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined text-[32px]">gastroenterology</span>
+                    </div>
+                    <span class="text-label-md font-label-md text-on-surface">Diarrhea</span>
+                </div>
+            </div>
+        </section>
+        <!-- Our Services (Asymmetric Layout) -->
+        <section class="bg-surface-container-low py-20 px-margin-mobile md:px-margin-desktop">
+            <div class="max-w-container-max mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-headline-lg font-headline-lg text-primary mb-2">Our Core Services</h2>
+                    <p class="text-body-md text-on-surface-variant">Specialized benefits to make your healthcare journey
+                        easier</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-gutter">
+                    <!-- Service Card 1 -->
+                    <div
+                        class="bg-white p-8 rounded-xl shadow-sm border-b-4 border-primary hover:-translate-y-2 transition-all">
+                        <div
+                            class="w-14 h-14 bg-primary text-on-primary rounded-xl flex items-center justify-center mb-6 shadow-md">
+                            <span class="material-symbols-outlined text-[28px]"
+                                style="font-variation-settings: 'FILL' 1;">location_on</span>
+                        </div>
+                        <h3 class="text-headline-md font-headline-md mb-3">Nearest Pharmacy</h3>
+                        <p class="text-body-sm text-on-surface-variant mb-6 leading-relaxed">Instantly locate pharmacies
+                            closest to your current location with full address and contact details.</p>
+                        <a class="text-primary font-label-md text-label-md flex items-center gap-1 hover:underline"
+                            href="#">View Map <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
+                    </div>
+                    <!-- Service Card 2 -->
+                    <div
+                        class="bg-white p-8 rounded-xl shadow-sm border-b-4 border-trust-teal hover:-translate-y-2 transition-all">
+                        <div
+                            class="w-14 h-14 bg-trust-teal text-on-primary rounded-xl flex items-center justify-center mb-6 shadow-md">
+                            <span class="material-symbols-outlined text-[28px]"
+                                style="font-variation-settings: 'FILL' 1;">schedule</span>
+                        </div>
+                        <h3 class="text-headline-md font-headline-md mb-3">Real-time Data</h3>
+                        <p class="text-body-sm text-on-surface-variant mb-6 leading-relaxed">Our inventory data is
+                            updated every 15 minutes by participating local pharmacies for guaranteed accuracy.</p>
+                        <a class="text-trust-teal font-label-md text-label-md flex items-center gap-1 hover:underline"
+                            href="#">How it works <span
+                                class="material-symbols-outlined text-sm">arrow_forward</span></a>
+                    </div>
+                    <!-- Service Card 3 -->
+                    <div
+                        class="bg-white p-8 rounded-xl shadow-sm border-b-4 border-primary-container hover:-translate-y-2 transition-all">
+                        <div
+                            class="w-14 h-14 bg-primary-container text-white rounded-xl flex items-center justify-center mb-6 shadow-md">
+                            <span class="material-symbols-outlined text-[28px]"
+                                style="font-variation-settings: 'FILL' 1;">call</span>
+                        </div>
+                        <h3 class="text-headline-md font-headline-md mb-3">Direct Contact</h3>
+                        <p class="text-body-sm text-on-surface-variant mb-6 leading-relaxed">Call pharmacies directly
+                            from the app to confirm availability or place a hold on critical prescriptions.</p>
+                        <a class="text-primary-container font-label-md text-label-md flex items-center gap-1 hover:underline"
+                            href="#">Contact Directory <span
+                                class="material-symbols-outlined text-sm">arrow_forward</span></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-inverse-surface text-on-secondary-fixed-variant border-t border-outline">
+        <div class="max-w-container-max mx-auto w-full py-12 px-margin-mobile md:px-margin-desktop">
+            <div class="flex flex-col md:flex-row justify-between items-start gap-12 mb-12">
+                <div class="max-w-xs">
+                    <span
+                        class="text-headline-md font-headline-md font-bold text-primary-fixed mb-4 block">MediMap</span>
+                    <p class="text-body-sm text-surface-variant">Connecting patients with essential medical supplies
+                        across the nation through intelligent inventory mapping.</p>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
+                    <div class="flex flex-col gap-3">
+                        <span class="text-label-md font-label-md text-white">Services</span>
+                        <a class="text-body-sm hover:text-primary-fixed hover:underline transition-all"
+                            href="#">Emergency Services</a>
+                        <a class="text-body-sm hover:text-primary-fixed hover:underline transition-all" href="#">About
+                            Us</a>
+                        <a class="text-body-sm hover:text-primary-fixed hover:underline transition-all"
+                            href="#">Contact</a>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <span class="text-label-md font-label-md text-white">Legal</span>
+                        <a class="text-body-sm hover:text-primary-fixed hover:underline transition-all" href="#">Privacy
+                            Policy</a>
+                        <a class="text-body-sm hover:text-primary-fixed hover:underline transition-all" href="#">Terms
+                            of Service</a>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="pt-8 border-t border-outline-variant/20 flex flex-col md:flex-row justify-between items-center gap-4">
+                <span class="text-label-sm font-label-sm">© 2024 MediMap Healthcare Solutions. All rights
+                    reserved.</span>
+                <div class="flex gap-6">
+                    <button
+                        class="material-symbols-outlined text-surface-variant hover:text-white transition-colors">brand_awareness</button>
+                    <button
+                        class="material-symbols-outlined text-surface-variant hover:text-white transition-colors">hub</button>
+                    <button
+                        class="material-symbols-outlined text-surface-variant hover:text-white transition-colors">public</button>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script>
+        // Simple micro-interaction for input highlight
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.parentElement.classList.add('ring-2', 'ring-primary/20');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.parentElement.classList.remove('ring-2', 'ring-primary/20');
+        });
+
+        // Interactive symptomatic cards effect
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+
+</html>
